@@ -1,0 +1,19 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">CyberShield SMB logo</title>
+  <desc id="desc">A shield split blue and white with a lock in the centre</desc>
+  <defs>
+    <clipPath id="shieldClip"><path d="M64 8L108 25V57C108 85.2 89.6 107.7 64 120C38.4 107.7 20 85.2 20 57V25L64 8Z"/></clipPath>
+    <linearGradient id="blueGradient" x1="20" y1="8" x2="108" y2="120" gradientUnits="userSpaceOnUse"><stop stop-color="#2563EB"/><stop offset="1" stop-color="#0F4C81"/></linearGradient>
+  </defs>
+  <path d="M64 6.5L109.5 24V57C109.5 86.4 90.4 109.4 64 122C37.6 109.4 18.5 86.4 18.5 57V24L64 6.5Z" fill="#0F4C81"/>
+  <g clip-path="url(#shieldClip)">
+    <rect x="20" y="8" width="44" height="112" fill="url(#blueGradient)"/>
+    <rect x="64" y="8" width="44" height="112" fill="#F8FBFF"/>
+    <path d="M64 8V120" stroke="#D5E5F8" stroke-width="2"/>
+    <path d="M64 17L99 30.5V57C99 79.7 84.5 98.8 64 109.6C43.5 98.8 29 79.7 29 57V30.5L64 17Z" stroke="#75A7DE" stroke-width="2" opacity=".65"/>
+  </g>
+  <path d="M64 8L108 25V57C108 85.2 89.6 107.7 64 120C38.4 107.7 20 85.2 20 57V25L64 8Z" stroke="#0F4C81" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M50 57.5V50C50 42.27 56.27 36 64 36C71.73 36 78 42.27 78 50V57.5" stroke="#0F4C81" stroke-width="6" stroke-linecap="round"/>
+  <rect x="43" y="55" width="42" height="33" rx="6" fill="#0F4C81"/>
+  <path d="M64 65C61.24 65 59 67.24 59 70C59 71.85 60.02 73.46 61.5 74.32V79C61.5 80.38 62.62 81.5 64 81.5C65.38 81.5 66.5 80.38 66.5 79V74.32C67.98 73.46 69 71.85 69 70C69 67.24 66.76 65 64 65Z" fill="#F8FBFF"/>
+</svg>

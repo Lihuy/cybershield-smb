@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}CyberShield SMB | Small Business Cybersecurity Assessment{% endblock %}
+
+{% block content %}
+<section class="hero-section overflow-hidden">
+    <div class="hero-orb hero-orb-one"></div>
+    <div class="hero-orb hero-orb-two"></div>
+    <div class="container position-relative">
+        <div class="row align-items-center gy-5">
+            <div class="col-lg-7">
+                <div class="eyebrow eyebrow-light"><i class="bi bi-shield-check"></i> Clear, practical cyber guidance</div>
+                <h1>Know your cyber risk.<br><span>Protect what matters.</span></h1>
+                <p class="hero-copy">CyberShield SMB helps small businesses understand their cybersecurity posture, identify priority gaps, and take practical next steps — in plain English.</p>
+                <div class="d-flex flex-wrap gap-3 mt-4">
+                    <a href="{{ url_for('assessment') }}" class="btn btn-light btn-lg hero-button">Start free assessment <i class="bi bi-arrow-right ms-2"></i></a>
+                    <a href="#how-it-works" class="btn btn-hero-outline btn-lg">See how it works</a>
+                </div>
+                <p class="hero-note"><i class="bi bi-clock me-2"></i>About 5 minutes &nbsp; <i class="bi bi-lock me-2"></i>No sign-up required</p>
+            </div>
+            <div class="col-lg-5">
+                <div class="hero-dashboard-card">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <span class="dashboard-label"><i class="bi bi-activity"></i> SECURITY SNAPSHOT</span>
+                        <span class="live-dot">Assessment ready</span>
+                    </div>
+                    <div class="mini-score-row">
+                        <div class="mini-score-ring"><div><strong>?</strong><span>score</span></div></div>
+                        <div>
+                            <span class="small-label">YOUR SECURITY POSTURE</span>
+                            <h2>Start with clarity</h2>
+                            <p>Answer 20 focused questions across six essential security areas.</p>
+                        </div>
+                    </div>
+                    <div class="mini-list">
+                        <div><span class="mini-check"><i class="bi bi-check"></i></span> Clear risk score and category insights</div>
+                        <div><span class="mini-check"><i class="bi bi-check"></i></span> Prioritised, practical action plan</div>
+                        <div><span class="mini-check"><i class="bi bi-check"></i></span> Plain-English cyber assistant</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section-space features-section">
+    <div class="container">
+        <div class="section-heading text-center mx-auto">
+            <span class="eyebrow"><i class="bi bi-stars"></i> Built for small business</span>
+            <h2>Security insight without the complexity</h2>
+            <p>Understand where you stand today and use a simple plan to make meaningful improvements.</p>
+        </div>
+        <div class="row g-4 mt-2">
+            <div class="col-md-4">
+                <article class="feature-card h-100">
+                    <div class="feature-icon feature-icon-blue"><i class="bi bi-clipboard2-pulse"></i></div>
+                    <h3>Cyber Risk Assessment</h3>
+                    <p>Assess the everyday safeguards that help protect your business from common cyber threats.</p>
+                    <span class="feature-link">20 focused questions <i class="bi bi-arrow-right"></i></span>
+                </article>
+            </div>
+            <div class="col-md-4">
+                <article class="feature-card h-100">
+                    <div class="feature-icon feature-icon-green"><i class="bi bi-chat-dots"></i></div>
+                    <h3>Cybersecurity Assistant</h3>
+                    <p>Get jargon-free answers to common questions about phishing, MFA, backups, passwords, and more.</p>
+                    <a class="feature-link" href="{{ url_for('chatbot') }}">Ask a question <i class="bi bi-arrow-right"></i></a>
+                </article>
+            </div>
+            <div class="col-md-4">
+                <article class="feature-card h-100">
+                    <div class="feature-icon feature-icon-amber"><i class="bi bi-list-check"></i></div>
+                    <h3>Action Plan</h3>
+                    <p>Turn assessment results into prioritised, practical improvements your team can understand.</p>
+                    <span class="feature-link">Made for your answers <i class="bi bi-arrow-right"></i></span>
+                </article>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="how-section" id="how-it-works">
+    <div class="container">
+        <div class="row align-items-center gx-lg-5">
+            <div class="col-lg-4 mb-5 mb-lg-0">
+                <span class="eyebrow eyebrow-light"><i class="bi bi-diagram-3"></i> The simple process</span>
+                <h2>From uncertainty to a clearer next step.</h2>
+                <p>Cybersecurity does not need to be overwhelming. CyberShield turns essential safeguards into an easy, guided assessment.</p>
+                <a class="btn btn-light mt-2" href="{{ url_for('assessment') }}">Begin your assessment</a>
+            </div>
+            <div class="col-lg-8">
+                <div class="steps-grid">
+                    <article class="step-card"><span class="step-number">1</span><h3>Answer questions</h3><p>Respond to simple Yes or No questions about your current practices.</p></article>
+                    <article class="step-card"><span class="step-number">2</span><h3>Risk analysis</h3><p>See a clear score across six essential cybersecurity categories.</p></article>
+                    <article class="step-card"><span class="step-number">3</span><h3>Get recommendations</h3><p>Receive an ordered list of practical improvements for your business.</p></article>
+                    <article class="step-card"><span class="step-number">4</span><h3>Improve security</h3><p>Use your report and action plan to make steady, informed progress.</p></article>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section-space benefits-section">
+    <div class="container">
+        <div class="benefits-panel">
+            <div class="row align-items-center gy-4">
+                <div class="col-lg-7">
+                    <span class="eyebrow"><i class="bi bi-shield-plus"></i> A better starting point</span>
+                    <h2>Built to make cybersecurity approachable.</h2>
+                    <div class="row g-3 mt-1">
+                        <div class="col-sm-6"><div class="benefit-item"><i class="bi bi-check-circle-fill"></i><span>Plain-English explanations</span></div></div>
+                        <div class="col-sm-6"><div class="benefit-item"><i class="bi bi-check-circle-fill"></i><span>Focused on real-world safeguards</span></div></div>
+                        <div class="col-sm-6"><div class="benefit-item"><i class="bi bi-check-circle-fill"></i><span>Clear priorities, not jargon</span></div></div>
+                        <div class="col-sm-6"><div class="benefit-item"><i class="bi bi-check-circle-fill"></i><span>Downloadable assessment report</span></div></div>
+                    </div>
+                </div>
+                <div class="col-lg-5 text-lg-end"><a href="{{ url_for('assessment') }}" class="btn btn-primary btn-lg">Check your cyber posture <i class="bi bi-arrow-right ms-2"></i></a></div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Assessment | CyberShield SMB{% endblock %}
+
+{% block content %}
+<section class="page-banner">
+    <div class="container">
+        <div class="row align-items-end gy-3">
+            <div class="col-lg-8">
+                <div class="eyebrow"><i class="bi bi-clipboard2-check"></i> Guided self-assessment</div>
+                <h1>Understand your cybersecurity posture</h1>
+                <p>Answer each question based on your business today. There are no wrong answers — honest answers create a more useful action plan.</p>
+            </div>
+            <div class="col-lg-4 text-lg-end"><div class="question-count"><i class="bi bi-clock-history"></i><span><strong>20 questions</strong><br>About 5 minutes</span></div></div>
+        </div>
+    </div>
+</section>
+
+<section class="assessment-section">
+    <div class="container">
+        <div class="assessment-progress-wrap sticky-top">
+            <div class="d-flex justify-content-between align-items-center mb-2"><span class="progress-label">Assessment progress</span><span class="progress-count"><span id="answeredCount">0</span> / 20 answered</span></div>
+            <div class="progress assessment-progress" role="progressbar" aria-label="Assessment completion"><div class="progress-bar" id="assessmentProgress" style="width: 0%"></div></div>
+        </div>
+        <form action="{{ url_for('assessment') }}" method="post" id="assessmentForm" novalidate>
+            {% for category in categories %}
+            <section class="assessment-card" aria-labelledby="{{ category.id }}-heading">
+                <div class="assessment-card-head">
+                    <div class="category-icon"><i class="bi {{ category.icon }}"></i></div>
+                    <div><span class="category-kicker">Security category {{ loop.index }} of {{ categories|length }}</span><h2 id="{{ category.id }}-heading">{{ category.name }}</h2><p>{{ category.description }}</p></div>
+                </div>
+                <div class="question-list">
+                    {% for question in category.questions %}
+                    <fieldset class="assessment-question">
+                        <legend><span class="question-number">{{ loop.index }}</span>{{ question.question }}</legend>
+                        <p class="question-help"><i class="bi bi-info-circle"></i>{{ question.help }}</p>
+                        <div class="answer-controls" role="radiogroup" aria-label="{{ question.question }}">
+                            <input class="btn-check answer-input" type="radio" name="{{ question.id }}" id="{{ question.id }}-yes" value="yes" required>
+                            <label class="answer-choice answer-yes" for="{{ question.id }}-yes"><i class="bi bi-check-circle"></i> Yes</label>
+                            <input class="btn-check answer-input" type="radio" name="{{ question.id }}" id="{{ question.id }}-no" value="no" required>
+                            <label class="answer-choice answer-no" for="{{ question.id }}-no"><i class="bi bi-x-circle"></i> No</label>
+                        </div>
+                    </fieldset>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endfor %}
+            <div class="assessment-submit-card">
+                <div><h2>Ready to see your results?</h2><p>Your tailored dashboard and prioritised action plan will be generated instantly.</p></div>
+                <button type="submit" class="btn btn-primary btn-lg" id="submitAssessment">Generate my results <i class="bi bi-arrow-right ms-2"></i></button>
+            </div>
+            <div class="form-error d-none" id="formError" role="alert"><i class="bi bi-exclamation-circle-fill"></i>Please answer all 20 questions before generating your results.</div>
+        </form>
+        <p class="assessment-disclaimer"><i class="bi bi-info-circle"></i>CyberShield SMB is an educational self-assessment and does not replace professional cybersecurity advice.</p>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const assessmentForm = document.getElementById('assessmentForm');
+    const answerInputs = document.querySelectorAll('.answer-input');
+    const countDisplay = document.getElementById('answeredCount');
+    const progressBar = document.getElementById('assessmentProgress');
+    const formError = document.getElementById('formError');
+    function updateProgress() {
+        const answered = new Set(Array.from(answerInputs).filter(input => input.checked).map(input => input.name)).size;
+        countDisplay.textContent = answered;
+        progressBar.style.width = `${(answered / 20) * 100}%`;
+        progressBar.setAttribute('aria-valuenow', answered);
+    }
+    answerInputs.forEach(input => input.addEventListener('change', updateProgress));
+    assessmentForm.addEventListener('submit', event => {
+        const answered = new Set(Array.from(answerInputs).filter(input => input.checked).map(input => input.name)).size;
+        if (answered !== 20) {
+            event.preventDefault();
+            formError.classList.remove('d-none');
+            formError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Cybersecurity Assistant | CyberShield SMB{% endblock %}
+
+{% block content %}
+<section class="assistant-hero">
+    <div class="container text-center">
+        <div class="assistant-avatar"><i class="bi bi-shield-lock-fill"></i></div>
+        <div class="eyebrow eyebrow-light justify-content-center"><i class="bi bi-chat-dots"></i> CyberShield assistant</div>
+        <h1>Cybersecurity answers, in plain English.</h1>
+        <p>Ask about common cybersecurity terms and practical safeguards for your small business.</p>
+    </div>
+</section>
+
+<section class="assistant-section">
+    <div class="container assistant-container">
+        <div class="assistant-info"><i class="bi bi-cpu"></i><div><strong>Rule-based educational assistant</strong><span>It provides clear, pre-written guidance on common cybersecurity topics.</span></div></div>
+        <div class="chat-card">
+            <div class="chat-card-head"><div class="chat-head-icon"><i class="bi bi-shield-lock"></i></div><div><h2>Ask CyberShield</h2><p><span class="online-indicator"></span>Ready to help</p></div></div>
+            {% if answer %}
+            <div class="conversation">
+                <div class="message message-user"><span>You asked</span><p>{{ question }}</p></div>
+                <div class="message message-assistant"><div class="message-icon"><i class="bi bi-shield-lock-fill"></i></div><div><span>CyberShield Assistant</span>{% for paragraph in answer.split('\n\n') %}<p>{{ paragraph }}</p>{% endfor %}</div></div>
+            </div>
+            {% else %}
+            <div class="assistant-welcome"><div class="welcome-icon"><i class="bi bi-chat-quote"></i></div><h3>How can I help?</h3><p>I can explain common cybersecurity concepts without the jargon.</p></div>
+            {% endif %}
+            <form action="{{ url_for('chatbot') }}" method="post" class="assistant-form">
+                <label for="question" class="visually-hidden">Your cybersecurity question</label>
+                <textarea class="form-control" name="question" id="question" rows="2" maxlength="500" placeholder="For example: What is MFA and why does my business need it?" required>{{ question }}</textarea>
+                <button class="btn btn-primary" type="submit">Ask assistant <i class="bi bi-send ms-2"></i></button>
+            </form>
+            <div class="suggested-questions"><span>Try a question:</span><a href="{{ url_for('chatbot') }}?topic=mfa" data-question="What is MFA?">What is MFA?</a><a href="{{ url_for('chatbot') }}?topic=phishing" data-question="What is phishing?">What is phishing?</a><a href="{{ url_for('chatbot') }}?topic=backups" data-question="Why are backups important?">Why are backups important?</a><a href="{{ url_for('chatbot') }}?topic=firewall" data-question="What is a firewall?">What is a firewall?</a></div>
+        </div>
+        <div class="assistant-disclaimer"><i class="bi bi-info-circle-fill"></i><p>{{ disclaimer }}</p></div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.querySelectorAll('[data-question]').forEach(link => {
+        link.addEventListener('click', event => {
+            event.preventDefault();
+            const input = document.getElementById('question');
+            input.value = link.dataset.question;
+            input.focus();
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Your Security Dashboard | CyberShield SMB{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<section class="dashboard-banner">
+    <div class="container">
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-3">
+            <div>
+                <div class="eyebrow eyebrow-light"><i class="bi bi-bar-chart-line"></i> Assessment complete</div>
+                <h1>Your cybersecurity dashboard</h1>
+                <p><i class="bi bi-calendar3 me-2"></i>Assessment date: {{ assessment_date }}</p>
+            </div>
+            <div class="dashboard-actions"><a href="{{ url_for('download_report') }}" class="btn btn-light"><i class="bi bi-file-earmark-arrow-down me-2"></i>Download PDF</a><a href="{{ url_for('assessment') }}" class="btn btn-dashboard-outline"><i class="bi bi-arrow-repeat me-2"></i>Take again</a></div>
+        </div>
+    </div>
+</section>
+
+<section class="dashboard-section">
+    <div class="container">
+        <div class="row g-4 kpi-grid">
+            <div class="col-sm-6 col-xl-3"><article class="kpi-card kpi-primary"><div class="kpi-icon"><i class="bi bi-shield-check"></i></div><div><span>OVERALL SCORE</span><strong>{{ score }}<small>/100</small></strong></div></article></div>
+            <div class="col-sm-6 col-xl-3"><article class="kpi-card"><div class="kpi-icon kpi-icon-blue"><i class="bi bi-clipboard2-check"></i></div><div><span>QUESTIONS REVIEWED</span><strong>{{ total_questions }}<small>/{{ total_questions }}</small></strong></div></article></div>
+            <div class="col-sm-6 col-xl-3"><article class="kpi-card"><div class="kpi-icon kpi-icon-green"><i class="bi bi-grid-1x2"></i></div><div><span>SECURITY CATEGORIES</span><strong>{{ category_scores|length }}<small>/6</small></strong></div></article></div>
+            <div class="col-sm-6 col-xl-3"><article class="kpi-card"><div class="kpi-icon kpi-icon-amber"><i class="bi bi-list-check"></i></div><div><span>RECOMMENDED ACTIONS</span><strong>{{ recommendations|length }}<small>to review</small></strong></div></article></div>
+        </div>
+
+        <div class="row g-4 mt-1">
+            <div class="col-lg-5">
+                <article class="score-card h-100">
+                    <div class="card-title-row"><div><span class="section-label">SECURITY POSTURE</span><h2>Overall score</h2></div><span class="risk-badge risk-{{ risk|lower }}">{{ risk }} RISK</span></div>
+                    <div class="score-ring" style="--score: {{ score }}" aria-label="Overall security score {{ score }} out of 100"><div class="score-ring-inner"><strong>{{ score }}</strong><span>out of 100</span></div></div>
+                    <div class="score-caption"><span class="status-dot status-{{ risk|lower }}"></span><strong>{{ risk.title() }} cyber risk</strong><p>A higher score means more foundational safeguards are reported as in place.</p></div>
+                </article>
+            </div>
+            <div class="col-lg-7">
+                <article class="summary-card h-100">
+                    <div class="card-title-row"><div><span class="section-label">EXECUTIVE SUMMARY</span><h2>{{ summary.headline }}</h2></div><div class="summary-shield"><i class="bi bi-shield-lock"></i></div></div>
+                    <p class="summary-lead">{{ summary.detail }}</p>
+                    <div class="summary-columns">
+                        <div>
+                            <h3><i class="bi bi-check-circle-fill text-success"></i> Stronger areas</h3>
+                            {% if summary.strengths %}
+                                {% for item in summary.strengths %}<p class="summary-item"><span>{{ item.name }}</span><strong>{{ item.score }}%</strong></p>{% endfor %}
+                            {% else %}
+                                <p class="summary-empty">Focus on the action plan to build stronger security areas.</p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h3><i class="bi bi-exclamation-triangle-fill text-warning"></i> Attention areas</h3>
+                            {% if summary.weaknesses %}
+                                {% for item in summary.weaknesses %}<p class="summary-item"><span>{{ item.name }}</span><strong>{{ item.score }}%</strong></p>{% endfor %}
+                            {% else %}
+                                <p class="summary-empty">No category scored below 60%. Keep reviewing your controls.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+
+        <section class="performance-section">
+            <div class="section-title-row"><div><span class="section-label">CYBERSECURITY OVERVIEW</span><h2>Category performance</h2><p>See how your reported safeguards compare across the six essential security areas.</p></div></div>
+            <div class="row g-4">
+                <div class="col-lg-7">
+                    <article class="performance-card h-100">
+                        {% for category in category_scores %}
+                        <div class="category-score-row">
+                            <div class="category-score-name"><span class="category-mini-icon"><i class="bi {{ category.icon }}"></i></span><span>{{ category.short_name }}</span></div>
+                            <div class="category-bar-wrap"><div class="progress category-progress"><div class="progress-bar" style="width: {{ category.score }}%"></div></div></div>
+                            <strong>{{ category.score }}%</strong>
+                        </div>
+                        {% endfor %}
+                    </article>
+                </div>
+                <div class="col-lg-5"><article class="chart-card h-100"><h3>Security profile</h3><p>Category scores at a glance</p><div class="chart-wrap"><canvas id="categoryChart" aria-label="Radar chart of category scores"></canvas></div></article></div>
+            </div>
+        </section>
+
+        <section class="recommendations-section">
+            <div class="section-title-row d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-3"><div><span class="section-label">PRIORITISED ACTION PLAN</span><h2>Recommended next steps</h2><p>Start with critical and high-priority actions to reduce common business risks.</p></div><a class="btn btn-outline-primary" href="{{ url_for('chatbot') }}"><i class="bi bi-chat-dots me-2"></i>Ask the assistant</a></div>
+            {% if recommendations %}
+            <div class="row g-3">
+                {% for recommendation in recommendations %}
+                <div class="col-12">
+                    <article class="recommendation-card priority-{{ recommendation.priority|lower }}">
+                        <div class="recommendation-icon"><i class="bi {{ recommendation.priority_icon }}"></i></div>
+                        <div class="recommendation-body"><div class="d-flex flex-wrap align-items-center gap-2 mb-1"><span class="priority-pill priority-{{ recommendation.priority|lower }}">{{ recommendation.priority }} priority</span><span class="recommendation-category">{{ recommendation.category }}</span></div><h3>{{ recommendation.title }}</h3><p>{{ recommendation.description }}</p></div>
+                        <a href="{{ url_for('chatbot') }}" class="recommendation-link" aria-label="Ask assistant about {{ recommendation.category }}"><i class="bi bi-chat-square-text"></i><span>Ask AI</span></a>
+                    </article>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="all-clear-card"><div class="all-clear-icon"><i class="bi bi-shield-check"></i></div><div><h3>Great work — no gaps were reported.</h3><p>Keep your safeguards effective by reviewing them regularly, testing backups, and staying alert to new threats.</p></div></div>
+            {% endif %}
+        </section>
+
+        <div class="result-cta"><div><span class="section-label">KEEP BUILDING RESILIENCE</span><h2>Make cybersecurity a regular habit.</h2><p>Revisit this assessment as your team, systems, and business needs change.</p></div><div class="d-flex flex-wrap gap-2"><a class="btn btn-primary" href="{{ url_for('assessment') }}">Take assessment again</a><a class="btn btn-outline-primary" href="{{ url_for('download_report') }}">Download PDF</a></div></div>
+        <p class="result-disclaimer"><i class="bi bi-info-circle"></i>This assessment is educational and based on the answers provided. It does not replace professional cybersecurity advice, a formal security audit, or incident-response support.</p>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const categoryScores = {{ category_scores|tojson }};
+    const chartContext = document.getElementById('categoryChart');
+    new Chart(chartContext, {
+        type: 'radar',
+        data: {
+            labels: categoryScores.map(category => category.short_name),
+            datasets: [{
+                label: 'Security score',
+                data: categoryScores.map(category => category.score),
+                backgroundColor: 'rgba(37, 99, 235, .16)',
+                borderColor: '#2563eb',
+                borderWidth: 2.5,
+                pointBackgroundColor: '#0f4c81',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { r: {
+                min: 0, max: 100,
+                ticks: { display: false, stepSize: 25 },
+                grid: { color: '#dce6f1' },
+                angleLines: { color: '#dce6f1' },
+                pointLabels: { color: '#38506a', font: { family: 'Poppins', size: 11, weight: '600' } }
+            }}
+        }
+    });
+</script>
+{% endblock %}
