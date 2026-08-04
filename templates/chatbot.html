@@ -5,7 +5,9 @@
 {% block content %}
 <section class="assistant-hero">
     <div class="container text-center">
-        <div class="assistant-avatar"><i class="bi bi-shield-lock-fill"></i></div>
+        <div class="assistant-avatar">
+            <img src="{{ url_for('static', filename='images/lock.svg') }}" width="32" height="32" alt="CyberShield">
+        </div>
         <div class="eyebrow eyebrow-light justify-content-center"><i class="bi bi-chat-dots"></i> CyberShield assistant</div>
         <h1>Cybersecurity answers, in plain English.</h1>
         <p>Ask about common cybersecurity terms and practical safeguards for your small business.</p>
@@ -14,24 +16,56 @@
 
 <section class="assistant-section">
     <div class="container assistant-container">
-        <div class="assistant-info"><i class="bi bi-cpu"></i><div><strong>Rule-based educational assistant</strong><span>It provides clear, pre-written guidance on common cybersecurity topics.</span></div></div>
+        <div class="assistant-info"><i class="bi bi-cpu"></i><div><strong>AI-powered educational assistant</strong><span>It provides clear, jargon-free guidance on common cybersecurity topics.</span></div></div>
+
         <div class="chat-card">
-            <div class="chat-card-head"><div class="chat-head-icon"><i class="bi bi-shield-lock"></i></div><div><h2>Ask CyberShield</h2><p><span class="online-indicator"></span>Ready to help</p></div></div>
-            {% if answer %}
-            <div class="conversation">
-                <div class="message message-user"><span>You asked</span><p>{{ question }}</p></div>
-                <div class="message message-assistant"><div class="message-icon"><i class="bi bi-shield-lock-fill"></i></div><div><span>CyberShield Assistant</span>{% for paragraph in answer.split('\n\n') %}<p>{{ paragraph }}</p>{% endfor %}</div></div>
+            <div class="chat-card-head">
+                <div class="chat-head-icon"><i class="bi bi-shield-lock"></i></div>
+                <div>
+                    <h2>Ask CyberShield</h2>
+                    <p><span class="online-indicator"></span>Ready to help</p>
+                </div>
             </div>
-            {% else %}
-            <div class="assistant-welcome"><div class="welcome-icon"><i class="bi bi-chat-quote"></i></div><h3>How can I help?</h3><p>I can explain common cybersecurity concepts without the jargon.</p></div>
-            {% endif %}
-            <form action="{{ url_for('chatbot') }}" method="post" class="assistant-form">
-                <label for="question" class="visually-hidden">Your cybersecurity question</label>
-                <textarea class="form-control" name="question" id="question" rows="2" maxlength="500" placeholder="For example: What is MFA and why does my business need it?" required>{{ question }}</textarea>
-                <button class="btn btn-primary" type="submit">Ask assistant <i class="bi bi-send ms-2"></i></button>
-            </form>
-            <div class="suggested-questions"><span>Try a question:</span><a href="{{ url_for('chatbot') }}?topic=mfa" data-question="What is MFA?">What is MFA?</a><a href="{{ url_for('chatbot') }}?topic=phishing" data-question="What is phishing?">What is phishing?</a><a href="{{ url_for('chatbot') }}?topic=backups" data-question="Why are backups important?">Why are backups important?</a><a href="{{ url_for('chatbot') }}?topic=firewall" data-question="What is a firewall?">What is a firewall?</a></div>
+
+            <!-- Chat Messages Container -->
+            <div id="chat-messages" class="chat-messages">
+                {% if answer %}
+                    <div class="message message-user">
+                        <span class="message-label">You asked</span>
+                        <p>{{ question }}</p>
+                    </div>
+                    <div class="message message-assistant">
+                        <div class="message-icon"><i class="bi bi-robot"></i></div>
+                        <div>
+                            <span class="message-label">CyberShield Assistant</span>
+                            {% for paragraph in answer.split('\n\n') %}<p>{{ paragraph }}</p>{% endfor %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="assistant-welcome">
+                        <div class="welcome-icon"><i class="bi bi-chat-quote"></i></div>
+                        <h3>How can I help?</h3>
+                        <p>I can explain common cybersecurity concepts without the jargon.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Chat Input Area -->
+            <div class="chat-input-area">
+                <input type="text" id="user-input" class="form-control" placeholder="Ask a cybersecurity question..." />
+                <button class="btn btn-primary" onclick="sendMessage()">Send <i class="bi bi-send ms-2"></i></button>
+            </div>
+
+            <!-- Suggested Questions -->
+            <div class="suggested-questions">
+                <span>Try a question:</span>
+                <a href="#" data-question="What is MFA?">What is MFA?</a>
+                <a href="#" data-question="What is phishing?">What is phishing?</a>
+                <a href="#" data-question="Why are backups important?">Why are backups important?</a>
+                <a href="#" data-question="What is a firewall?">What is a firewall?</a>
+            </div>
         </div>
+
         <div class="assistant-disclaimer"><i class="bi bi-info-circle-fill"></i><p>{{ disclaimer }}</p></div>
     </div>
 </section>
@@ -39,13 +73,129 @@
 
 {% block scripts %}
 <script>
+    // --- Existing code for suggested questions ---
     document.querySelectorAll('[data-question]').forEach(link => {
         link.addEventListener('click', event => {
             event.preventDefault();
-            const input = document.getElementById('question');
-            input.value = link.dataset.question;
-            input.focus();
+            const question = link.dataset.question;
+            // Set the input value and trigger send
+            document.getElementById('user-input').value = question;
+            sendMessage();
         });
     });
+
+    // --- New interactive chat functions ---
+
+    function sendMessage() {
+        const userInput = document.getElementById('user-input').value.trim();
+        if (!userInput) return;
+
+        // Clear the input field
+        document.getElementById('user-input').value = '';
+
+        // Remove welcome message if present
+        const welcome = document.querySelector('.assistant-welcome');
+        if (welcome) welcome.remove();
+
+        // Display user message
+        addMessage(userInput, 'user');
+
+        // Show typing indicator
+        showTyping();
+
+        // Send to API
+        fetch('/api/chat', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                message: userInput,
+                risk_context: getRiskContext() || ''
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideTyping();
+            addMessage(data.response || 'Sorry, something went wrong. Please try again.', 'assistant');
+        })
+        .catch(error => {
+            hideTyping();
+            console.error('Error:', error);
+            addMessage('Sorry, I had trouble connecting. Please try again.', 'assistant');
+        });
+    }
+
+    function addMessage(text, role) {
+        const messagesDiv = document.getElementById('chat-messages');
+        if (!messagesDiv) return;
+
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message message-${role}`;
+
+        if (role === 'user') {
+            msgDiv.innerHTML = `<span class="message-label">You asked</span><p>${escapeHtml(text)}</p>`;
+        } else {
+            // assistant
+            const paragraphs = text.split('\n\n').filter(p => p.trim());
+            const content = paragraphs.map(p => `<p>${escapeHtml(p)}</p>`).join('');
+            msgDiv.innerHTML = `
+                <div class="message-icon"><i class="bi bi-robot"></i></div>
+                <div>
+                    <span class="message-label">CyberShield Assistant</span>
+                    ${content}
+                </div>
+            `;
+        }
+
+        messagesDiv.appendChild(msgDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function showTyping() {
+        const messagesDiv = document.getElementById('chat-messages');
+        if (!messagesDiv) return;
+
+        // Remove existing typing indicator
+        hideTyping();
+
+        const typingDiv = document.createElement('div');
+        typingDiv.id = 'typing-indicator';
+        typingDiv.className = 'message message-assistant typing-indicator';
+        typingDiv.innerHTML = `
+            <div class="message-icon"><i class="bi bi-robot"></i></div>
+            <div>
+                <span class="message-label">CyberShield Assistant</span>
+                <div class="typing-dots"><span></span><span></span><span></span></div>
+            </div>
+        `;
+        messagesDiv.appendChild(typingDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function hideTyping() {
+        const typing = document.getElementById('typing-indicator');
+        if (typing) typing.remove();
+    }
+
+    function getRiskContext() {
+        const element = document.getElementById('risk-context');
+        return element ? element.value : '';
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // --- Optional: Allow Enter key to send ---
+    document.getElementById('user-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    // --- Add hidden risk context field (if not already in the page) ---
+    // This is already included in the template via {{ risk_context or '' }}
 </script>
 {% endblock %}

@@ -1,13 +1,15 @@
 """CyberShield SMB Flask application entry point."""
 
+import json
 import os
 from datetime import date
 from io import BytesIO
 from xml.sax.saxutils import escape
 
-from flask import Flask, redirect, render_template, request, send_file, session, url_for
+from flask import Flask, jsonify, redirect, render_template, request, send_file, session, url_for
 
 from ai.assistant import DISCLAIMER, answer_question
+from ai.openai_assistant import get_openai_response
 from data.questions import ASSESSMENT_CATEGORIES
 from engine.risk_engine import calculate_assessment
 from utils.recommendations import generate_recommendations
@@ -158,6 +160,21 @@ def download_report():
     safe_date = context["assessment_date"].replace(" ", "-").lower()
     return send_file(buffer, as_attachment=True, download_name=f"cybershield-smb-report-{safe_date}.pdf", mimetype="application/pdf")
 
+@app.route('/api/chat', methods=['POST'])
+def chat():
+    """API endpoint for AI-powered chat responses."""
+    try:
+        data = request.get_json()
+        user_message = data.get('message', '')
+        risk_context = data.get('risk_context', '')
+
+        if not user_message:
+            return jsonify({'error': 'No message provided'}), 400
+
+        response = get_openai_response(user_message, risk_context)
+        return jsonify({'response': response})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)
