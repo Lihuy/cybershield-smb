@@ -358,6 +358,9 @@ a:hover { color: var(--navy); }
 }
 
 .suggested-questions span {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     color: #7a899b;
     font-size: 9px;
     font-weight: 600;
@@ -393,6 +396,9 @@ a:hover { color: var(--navy); }
 }
 
 .assistant-disclaimer i {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     color: var(--blue);
     font-size: 14px;
     flex-shrink: 0;
