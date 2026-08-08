@@ -82,21 +82,52 @@
         </section>
 
         <section class="recommendations-section">
-            <div class="section-title-row d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-3"><div><span class="section-label">PRIORITISED ACTION PLAN</span><h2>Recommended next steps</h2><p>Start with critical and high-priority actions to reduce common business risks.</p></div><a class="btn btn-outline-primary" href="{{ url_for('chatbot') }}"><i class="bi bi-chat-dots me-2"></i>Ask the assistant</a></div>
+            <div class="section-title-row d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-3">
+                <div>
+                    <span class="section-label">PRIORITISED ACTION PLAN</span>
+                    <h2>Recommended next steps</h2>
+                    <p>Start with critical and high-priority actions to reduce common business risks.</p>
+                </div>
+                <a class="btn btn-outline-primary" href="{{ url_for('chatbot') }}">
+                    <i class="bi bi-chat-dots me-2"></i>Ask the assistant
+                </a>
+            </div>
+
             {% if recommendations %}
             <div class="row g-3">
                 {% for recommendation in recommendations %}
                 <div class="col-12">
-                    <article class="recommendation-card priority-{{ recommendation.priority|lower }}">
+                    <article class="recommendation-card priority-{{ recommendation.priority|lower }}" id="rec-{{ loop.index }}">
                         <div class="recommendation-icon"><i class="bi {{ recommendation.priority_icon }}"></i></div>
-                        <div class="recommendation-body"><div class="d-flex flex-wrap align-items-center gap-2 mb-1"><span class="priority-pill priority-{{ recommendation.priority|lower }}">{{ recommendation.priority }} priority</span><span class="recommendation-category">{{ recommendation.category }}</span></div><h3>{{ recommendation.title }}</h3><p>{{ recommendation.description }}</p></div>
-                        <a href="{{ url_for('chatbot') }}" class="recommendation-link" aria-label="Ask assistant about {{ recommendation.category }}"><i class="bi bi-chat-square-text"></i><span>Ask AI</span></a>
+                        <div class="recommendation-body">
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                <span class="priority-pill priority-{{ recommendation.priority|lower }}">{{ recommendation.priority }} priority</span>
+                                <span class="recommendation-category">{{ recommendation.category }}</span>
+                            </div>
+                            <h3>{{ recommendation.title }}</h3>
+                            <p>{{ recommendation.description }}</p>
+                            <!-- AI Response Container -->
+                            <div class="ai-response-container" id="ai-response-{{ loop.index }}" style="display: none;">
+                                <div class="ai-response-content"></div>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary ask-ai-btn"
+                                data-recommendation="{{ recommendation.title }}"
+                                data-target="ai-response-{{ loop.index }}">
+                            <i class="bi bi-chat-square-text"></i> Ask AI
+                        </button>
                     </article>
                 </div>
                 {% endfor %}
             </div>
             {% else %}
-            <div class="all-clear-card"><div class="all-clear-icon"><i class="bi bi-shield-check"></i></div><div><h3>Great work — no gaps were reported.</h3><p>Keep your safeguards effective by reviewing them regularly, testing backups, and staying alert to new threats.</p></div></div>
+            <div class="all-clear-card">
+                <div class="all-clear-icon"><i class="bi bi-shield-check"></i></div>
+                <div>
+                    <h3>Great work — no gaps were reported.</h3>
+                    <p>Keep your safeguards effective by reviewing them regularly, testing backups, and staying alert to new threats.</p>
+                </div>
+            </div>
             {% endif %}
         </section>
 
@@ -138,6 +169,72 @@
                 pointLabels: { color: '#38506a', font: { family: 'Poppins', size: 11, weight: '600' } }
             }}
         }
+    });
+
+    // --- Ask AI Feature (Inline AI Responses) ---
+    document.addEventListener('DOMContentLoaded', function() {
+        const askButtons = document.querySelectorAll('.ask-ai-btn');
+
+        askButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const recommendation = this.dataset.recommendation;
+                const targetId = this.dataset.target;
+                const responseContainer = document.getElementById(targetId);
+                const responseContent = responseContainer.querySelector('.ai-response-content');
+
+                // Toggle visibility if already open (and answered)
+                if (responseContainer.style.display === 'block') {
+                    responseContainer.style.display = 'none';
+                    return;
+                }
+
+                // Show container (it's hidden)
+                responseContainer.style.display = 'block';
+
+                // If already answered, just show the cached response
+                if (responseContainer.dataset.answered === 'true') {
+                    return;
+                }
+
+                // First time: show loading state
+                responseContent.innerHTML = '<span style="color: #6c7f95;"><i class="bi bi-hourglass-split"></i> Getting AI insights...</span>';
+
+                // Disable button during request
+                this.disabled = true;
+                this.innerHTML = '<i class="bi bi-hourglass-split"></i> Loading...';
+
+                // Send request to AI with [ASK_AI] prefix to bypass classifier
+                fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: `[ASK_AI] What does "${recommendation}" mean and why is it important for my small business?`,
+                        risk_context: '{{ risk }}'
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.response) {
+                        const formattedResponse = data.response.split('\n\n').map(para => `<p style="margin: 0 0 8px 0;">${para}</p>`).join('');
+                        responseContent.innerHTML = formattedResponse;
+                        // Mark as answered so we don't call the API again
+                        responseContainer.dataset.answered = 'true';
+                    } else {
+                        responseContent.innerHTML = '<span style="color: #c0392b;">Sorry, something went wrong. Please try again.</span>';
+                    }
+                    this.disabled = false;
+                    this.innerHTML = '<i class="bi bi-chat-square-text"></i> Ask AI';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    responseContent.innerHTML = '<span style="color: #c0392b;">Sorry, I had trouble connecting. Please try again.</span>';
+                    this.disabled = false;
+                    this.innerHTML = '<i class="bi bi-chat-square-text"></i> Ask AI';
+                });
+            });
+        });
     });
 </script>
 {% endblock %}
