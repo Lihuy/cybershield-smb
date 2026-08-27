@@ -5,6 +5,11 @@
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![Flask](https://img.shields.io/badge/Flask-3.x-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
 [![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o--mini-412991?style=for-the-badge&logo=openai&logoColor=white)](https://openai.com/)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://cybershield-smb.onrender.com)
+
+### 🌐 [**Try it live → cybershield-smb.onrender.com**](https://cybershield-smb.onrender.com)
+
+> Hosted on Render's free tier — the first request after a period of inactivity may take ~30 seconds while the server wakes up.
 
 ---
 
@@ -112,6 +117,8 @@ python app.py
 ```
 
 Visit `http://127.0.0.1:5000` in your browser.
+
+> **Just want to see it working?** A live instance is already deployed at **<https://cybershield-smb.onrender.com>** — no setup or API key required.
 
 ---
 

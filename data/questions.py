@@ -14,7 +14,7 @@ ASSESSMENT_CATEGORIES = [
                 "help": "MFA asks for a second proof, such as a phone prompt, after a password.",
                 "recommendation": "Enable MFA on email, banking, accounting, cloud storage, and administrator accounts.",
                 "priority": "Critical",
-            },
+                },
             {
                 "id": "unique_passwords",
                 "question": "Does every staff member use a unique, strong password for each business account?",
