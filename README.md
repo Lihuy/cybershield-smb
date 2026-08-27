@@ -9,7 +9,7 @@
 
 ### 🌐 [**Try it live → cybershield-smb.onrender.com**](https://cybershield-smb.onrender.com)
 
-> Hosted on Render's free tier — the first request after a period of inactivity may take ~30 seconds while the server wakes up.
+> Hosted on Render's free tier
 
 ---
 
