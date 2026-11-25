@@ -163,6 +163,7 @@ cybershield-smb/
 │   └── tailored_*.html         # Tailored assessment: intake, confirm, questions (2.0)
 ├── tests/                      # pytest suite: guest regression, accounts, assistant, tailored assessment
 ├── e2e/                        # Browser end-to-end tests: run_e2e.py drives every feature and writes a report
+├── scripts/db_stats.py        # Read-only record counts for the local or Render database
 ├── .github/workflows/tests.yml # Runs both test suites on every push to GitHub
 ├── utils/
 │   └── recommendations.py     # Builds the prioritised action plan from unanswered items
