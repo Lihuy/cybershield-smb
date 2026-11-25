@@ -15,16 +15,46 @@
                 <h1>Your cybersecurity dashboard</h1>
                 <p><i class="bi bi-calendar3 me-2"></i>Assessment date: {{ assessment_date }}</p>
             </div>
-            <div class="dashboard-actions"><a href="{{ url_for('download_report') }}" class="btn btn-light"><i class="bi bi-file-earmark-arrow-down me-2"></i>Download PDF</a><a href="{{ url_for('assessment') }}" class="btn btn-dashboard-outline"><i class="bi bi-arrow-repeat me-2"></i>Take again</a></div>
+            <div class="dashboard-actions"><a href="{{ url_for('download_report') }}" class="btn btn-light"><i class="bi bi-file-earmark-arrow-down me-2"></i>Download PDF</a><a href="{{ url_for('tailored_intake') if sector else url_for('assessment') }}" class="btn btn-dashboard-outline"><i class="bi bi-arrow-repeat me-2"></i>Take again</a></div>
         </div>
     </div>
 </section>
 
 <section class="dashboard-section">
     <div class="container">
+        {% if account.signed_in and account.saved %}
+        <div class="account-banner account-banner-saved" role="status">
+            <div class="account-banner-icon"><i class="bi bi-check2-circle"></i></div>
+            <div class="account-banner-text">
+                <strong>Saved to your score history</strong>
+                {% if account.delta is not none %}
+                <span>{% if account.delta > 0 %}Up {{ account.delta }} points{% elif account.delta < 0 %}Down {{ -account.delta }} points{% else %}No change{% endif %} since your previous assessment ({{ account.previous_score }}/100). This is attempt {{ account.attempts }}. Scores reflect the answers given each time.{% else %}This is your first saved assessment. Take it again later to see how your score changes.{% endif %}</span>
+            </div>
+            <a class="btn btn-sm btn-primary" href="{{ url_for('assessment_history') }}">View score history</a>
+        </div>
+        {% elif account.signed_in %}
+        <div class="account-banner" role="status">
+            <div class="account-banner-icon"><i class="bi bi-clock-history"></i></div>
+            <div class="account-banner-text"><strong>Signed in</strong><span>This result has not been added to your history yet. Submit an assessment while signed in to save it.</span></div>
+            <a class="btn btn-sm btn-primary" href="{{ url_for('assessment_history') }}">View score history</a>
+        </div>
+        {% else %}
+        <div class="account-banner" role="note">
+            <div class="account-banner-icon"><i class="bi bi-bookmark-star"></i></div>
+            <div class="account-banner-text">
+                <strong>Want to keep this result?</strong>
+                <span>Create a free account to save this score and track your progress over time. You can keep using CyberShield as a guest instead; nothing is saved unless you create an account.</span>
+            </div>
+            <div class="account-banner-actions">
+                <a class="btn btn-sm btn-primary" href="{{ url_for('register_form') }}">Create account</a>
+                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('login_form') }}">Log in</a>
+            </div>
+        </div>
+        {% endif %}
+
         <div class="row g-4 kpi-grid">
             <div class="col-sm-6 col-xl-3"><article class="kpi-card kpi-primary"><div class="kpi-icon"><i class="bi bi-shield-check"></i></div><div><span>OVERALL SCORE</span><strong>{{ score }}<small>/100</small></strong></div></article></div>
-            <div class="col-sm-6 col-xl-3"><article class="kpi-card"><div class="kpi-icon kpi-icon-blue"><i class="bi bi-clipboard2-check"></i></div><div><span>QUESTIONS REVIEWED</span><strong>{{ total_questions }}<small>/{{ total_questions }}</small></strong></div></article></div>
+            <div class="col-sm-6 col-xl-3"><article class="kpi-card"><div class="kpi-icon kpi-icon-blue"><i class="bi bi-clipboard2-check"></i></div><div><span>QUESTIONS REVIEWED</span><strong>{{ total_questions + (sector.total if sector else 0) }}<small>/{{ total_questions + (sector.total if sector else 0) }}</small></strong></div></article></div>
             <div class="col-sm-6 col-xl-3"><article class="kpi-card"><div class="kpi-icon kpi-icon-green"><i class="bi bi-grid-1x2"></i></div><div><span>SECURITY CATEGORIES</span><strong>{{ category_scores|length }}<small>/6</small></strong></div></article></div>
             <div class="col-sm-6 col-xl-3"><article class="kpi-card"><div class="kpi-icon kpi-icon-amber"><i class="bi bi-list-check"></i></div><div><span>RECOMMENDED ACTIONS</span><strong>{{ recommendations|length }}<small>to review</small></strong></div></article></div>
         </div>
@@ -81,12 +111,76 @@
             </div>
         </section>
 
+        {% if sector %}
+        <section class="performance-section sector-section" id="sector-results">
+            <div class="section-title-row"><div><span class="section-label">FOR YOUR BUSINESS TYPE</span><h2>{{ sector.name }} questions</h2><p>These extra questions fit your business type. They are scored separately and do not change your overall score above. <a href="{{ url_for('tailored_sources') }}">See the frameworks each question is based on</a>.</p></div></div>
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <article class="score-card sector-score-card h-100">
+                        <div class="category-icon"><i class="bi {{ sector.icon }}"></i></div>
+                        <strong class="sector-score-value">{{ sector.score }}<small>%</small></strong>
+                        <p class="sector-score-caption">{{ sector.protected }} of {{ sector.total }} {{ sector.name|lower }} safeguards reported as in place</p>
+                        {% if sector.confidence %}<p class="sector-score-note">Business type suggested from your answers with {{ (sector.confidence * 100)|round|int }}% confidence, and confirmed by you.</p>{% else %}<p class="sector-score-note">Business type chosen by you.</p>{% endif %}
+                    </article>
+                </div>
+                <div class="col-lg-8">
+                    <article class="performance-card h-100">
+                        <ul class="sector-checklist">
+                            {% for item in sector.questions %}
+                            <li class="{{ 'sector-ok' if item.in_place else 'sector-gap' }}">
+                                <i class="bi {{ 'bi-check-circle-fill' if item.in_place else 'bi-x-circle-fill' }}" aria-hidden="true"></i>
+                                <div><strong><span class="visually-hidden">{{ 'In place' if item.in_place else 'Not in place' }}: </span>{{ item.question }}</strong><span>Why we ask: {{ item.reason }}</span><span class="source-line">Based on: {% for source in item.sources %}{{ source.framework }} ({{ source.ref }}){% if not loop.last %} · {% endif %}{% endfor %}</span></div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </article>
+                </div>
+            </div>
+            {% if sector.recommendations %}
+            <div class="row g-3 mt-1">
+                {% for recommendation in sector.recommendations %}
+                <div class="col-12">
+                    <article class="recommendation-card priority-{{ recommendation.priority|lower }}">
+                        <div class="recommendation-icon"><i class="bi {{ recommendation.priority_icon }}"></i></div>
+                        <div class="recommendation-body">
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                <span class="priority-pill priority-{{ recommendation.priority|lower }}">{{ recommendation.priority }} priority</span>
+                                <span class="recommendation-category">{{ recommendation.category }}</span>
+                            </div>
+                            <h3>{{ recommendation.title }}</h3>
+                            <p>{{ recommendation.description }}</p>
+                            <div class="ai-response-container" id="ai-response-sector-{{ loop.index }}" style="display: none;">
+                                <div class="ai-response-content"></div>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary ask-ai-btn"
+                                data-recommendation="{{ recommendation.title }}"
+                                data-target="ai-response-sector-{{ loop.index }}">
+                            <i class="bi bi-chat-square-text"></i> Ask AI
+                        </button>
+                    </article>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </section>
+        {% else %}
+        <div class="account-banner tailored-banner" role="note">
+            <div class="account-banner-icon"><i class="bi bi-sliders"></i></div>
+            <div class="account-banner-text">
+                <strong>Want questions that fit your kind of business?</strong>
+                <span>Answer four quick questions about your business and we will add a short set for retail, hospitality, trades or professional services. Your overall score is worked out the same way.</span>
+            </div>
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('tailored_intake') }}">Try the tailored assessment</a>
+        </div>
+        {% endif %}
+
         <section class="recommendations-section">
             <div class="section-title-row d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-3">
                 <div>
                     <span class="section-label">PRIORITISED ACTION PLAN</span>
                     <h2>Recommended next steps</h2>
-                    <p>Start with critical and high-priority actions to reduce common business risks.</p>
+                    <p>Start with critical and high-priority actions to reduce common business risks.{% if sector %} These come from the 20 core questions.{% endif %} <a href="{{ url_for('tailored_sources') }}">See the frameworks each question is based on</a>.</p>
                 </div>
                 <a class="btn btn-outline-primary" href="{{ url_for('chatbot') }}">
                     <i class="bi bi-chat-dots me-2"></i>Ask the assistant
@@ -106,6 +200,8 @@
                             </div>
                             <h3>{{ recommendation.title }}</h3>
                             <p>{{ recommendation.description }}</p>
+                            {% set based_on = core_sources.get(recommendation.question_id) if core_sources else None %}
+                            {% if based_on %}<p class="source-line">Based on: {% for source in based_on %}{{ source.framework }} ({{ source.ref }}){% if not loop.last %} · {% endif %}{% endfor %}</p>{% endif %}
                             <!-- AI Response Container -->
                             <div class="ai-response-container" id="ai-response-{{ loop.index }}" style="display: none;">
                                 <div class="ai-response-content"></div>
@@ -172,6 +268,11 @@
     });
 
     // --- Ask AI Feature (Inline AI Responses) ---
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
     document.addEventListener('DOMContentLoaded', function() {
         const askButtons = document.querySelectorAll('.ask-ai-btn');
 
@@ -217,7 +318,7 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.response) {
-                        const formattedResponse = data.response.split('\n\n').map(para => `<p style="margin: 0 0 8px 0;">${para}</p>`).join('');
+                        const formattedResponse = data.response.split('\n\n').map(para => `<p style="margin: 0 0 8px 0;">${escapeHtml(para)}</p>`).join('');
                         responseContent.innerHTML = formattedResponse;
                         // Mark as answered so we don't call the API again
                         responseContainer.dataset.answered = 'true';

@@ -5,7 +5,22 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
     envVars:
+      # Match the Python used locally and in the GitHub test runs, so a platform upgrade cannot break the build.
+      - key: PYTHON_VERSION
+        value: "3.13"
       - key: OPENAI_API_KEY
         sync: false
       - key: CYBERSHIELD_SECRET_KEY
         generateValue: true
+      - key: CYBERSHIELD_COOKIE_SECURE
+        value: "true"
+      # Render terminates TLS at a load balancer; trust one proxy so rate limits see real visitor IPs.
+      - key: CYBERSHIELD_TRUST_PROXY
+        value: "true"
+      # Set this in the Render dashboard to a hosted PostgreSQL URL. Without it the app falls back to a
+      # SQLite file on Render's ephemeral disk, and accounts and history are lost on redeploy or restart.
+      - key: DATABASE_URL
+        sync: false
+      # Spend controls for the OpenAI-backed assistant (defaults: 20 requests per visitor per 15 minutes, 300 per day).
+      - key: CYBERSHIELD_AI_DAILY_CAP
+        value: "300"

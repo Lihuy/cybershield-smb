@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Where the questions come from | CyberShield SMB{% endblock %}
+
+{% block content %}
+<section class="page-banner">
+    <div class="container">
+        <div class="eyebrow"><i class="bi bi-journal-check"></i> Sources</div>
+        <h1>Where the questions come from</h1>
+        <p>Every question in CyberShield SMB is based on published security guidance. This page lists the 20 core questions and the extra questions for each business type, why each is asked, and the frameworks it traces to.</p>
+        <nav class="sources-jump" aria-label="Jump to"><a href="#core">Core questions</a>{% for sector in sectors %}<a href="#sector-{{ loop.index }}">{{ sector.name }}</a>{% endfor %}</nav>
+    </div>
+</section>
+
+<section class="assessment-section">
+    <div class="container">
+        <div class="intake-card">
+            <h2 class="intake-legend">Frameworks used</h2>
+            <ul class="framework-list">
+                {% for framework in frameworks %}
+                <li><strong>{{ framework.short }}</strong>: {% if framework.url %}<a href="{{ framework.url }}" target="_blank" rel="noopener noreferrer">{{ framework.name }}</a>{% else %}{{ framework.name }}{% endif %}<small> {{ framework.publisher }}</small></li>
+                {% endfor %}
+            </ul>
+            <p class="intake-note"><span class="fit-tag">Direct</span> means the source asks for the same safeguard. <span class="fit-tag fit-related">Related</span> means the source covers the same aim but not this exact safeguard. The Essential Eight covers eight technical strategies, so it appears only where one of them fits. Topics such as Wi-Fi, firewalls, staff training or card handling are outside it.</p>
+        </div>
+
+        <h2 class="sources-group" id="core">The 20 core questions</h2>
+        <p class="sources-group-note">Asked of every business. The NIST CSF 2.0 function shows which part of the framework each safeguard belongs to. Sources are shown for reference and are not used in scoring.</p>
+        {% for category in core %}
+        <div class="intake-card">
+            <h3 class="intake-legend"><span class="category-icon"><i class="bi {{ category.icon }}"></i></span>{{ category.name }}</h3>
+            <div class="table-responsive">
+                <table class="table sources-table align-top">
+                    <thead><tr><th scope="col" style="width: 30%">Question</th><th scope="col" style="width: 24%">Why it is asked</th><th scope="col" style="width: 11%">NIST function</th><th scope="col">Based on</th></tr></thead>
+                    <tbody>
+                        {% for question in category.questions %}
+                        <tr>
+                            <td>{{ question.question }}</td>
+                            <td>{{ question.reason }}</td>
+                            <td>{% for function in question.functions %}<span class="function-tag">{{ function|capitalize }}</span>{% endfor %}</td>
+                            <td>
+                                <ul>
+                                    {% for source in question.sources %}
+                                    <li><strong>{{ source.framework }}</strong>: {{ source.ref }} <span class="fit-tag {{ 'fit-related' if source.fit == 'related' else '' }}">{{ source.fit|capitalize }}</span>{% if source.note %}<small>{{ source.note }}</small>{% endif %}</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+
+        <h2 class="sources-group">Questions for each business type</h2>
+        <p class="sources-group-note">Added in the tailored assessment and scored separately from the core score.</p>
+        {% for sector in sectors %}
+        <div class="intake-card" id="sector-{{ loop.index }}">
+            <h3 class="intake-legend"><span class="category-icon"><i class="bi {{ sector.icon }}"></i></span>{{ sector.name }}</h3>
+            <div class="table-responsive">
+                <table class="table sources-table align-top">
+                    <thead><tr><th scope="col" style="width: 34%">Question</th><th scope="col" style="width: 26%">Why it is asked</th><th scope="col">Based on</th></tr></thead>
+                    <tbody>
+                        {% for question in sector.questions %}
+                        <tr>
+                            <td>{{ question.question }}</td>
+                            <td>{{ question.reason }}</td>
+                            <td>
+                                <ul>
+                                    {% for source in question.sources %}
+                                    <li><strong>{{ source.framework }}</strong>: {{ source.ref }} <span class="fit-tag {{ 'fit-related' if source.fit == 'related' else '' }}">{{ source.fit|capitalize }}</span>{% if source.note %}<small>{{ source.note }}</small>{% endif %}</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+        <p class="assessment-disclaimer"><i class="bi bi-info-circle"></i>CyberShield SMB is an educational self-assessment. References point to the guidance a question is based on; they are not a statement of compliance with any standard.</p>
+    </div>
+</section>
+{% endblock %}

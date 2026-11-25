@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Confirm your business type | CyberShield SMB{% endblock %}
+
+{% set state = outcome.state %}
+{% set tied = breakdown|length > 1 and breakdown[0].points == breakdown[1].points %}
+
+{% block content %}
+<section class="page-banner">
+    <div class="container">
+        <div class="eyebrow"><i class="bi bi-sliders"></i> Tailored assessment</div>
+        {% if state == 'clear' %}
+        <h1>Does this look right?</h1>
+        <p>Based on your answers, we suggested a business type. You decide whether to use it.</p>
+        {% elif state == 'none' %}
+        <h1>Choose your business type</h1>
+        <p>We could not match your business to one of the four types, so the choice is yours.</p>
+        {% else %}
+        <h1>Check your business type</h1>
+        <p>We found a possible match, but it is not certain. Please check it before you continue.</p>
+        {% endif %}
+    </div>
+</section>
+
+<section class="assessment-section">
+    <div class="container intake-container">
+        {% set step = 2 %}{% include "_tailored_steps.html" %}
+        {% if error %}<div class="form-error" role="alert"><i class="bi bi-exclamation-circle-fill"></i>{{ error }}</div>{% endif %}
+
+        <div class="intake-card suggestion-card match-{{ state }}">
+            <div class="suggestion-head">
+                <div class="category-icon"><i class="bi {{ suggested.icon if suggested else 'bi-question-circle' }}"></i></div>
+                <div>
+                    {% if state == 'clear' %}
+                    <span class="section-label">SUGGESTED BUSINESS TYPE</span>
+                    <h2>{{ suggested.name }}</h2>
+                    <p>{{ suggested.description }}</p>
+                    {% elif state == 'close' %}
+                    <span class="section-label">CLOSEST MATCH</span>
+                    <h2>{% if tied %}{{ breakdown[0].name }} or {{ breakdown[1].name }}{% else %}{{ suggested.name }}{% endif %}</h2>
+                    <p>Your answers were split between more than one type, so nothing has been selected for you.</p>
+                    {% elif state == 'description' %}
+                    <span class="section-label">FROM YOUR DESCRIPTION ONLY</span>
+                    <h2>{{ suggested.name }}</h2>
+                    <p>Your four answers did not point to a type, so this comes only from how your description was read. Please check it.</p>
+                    {% else %}
+                    <span class="section-label">NO MATCH FOUND</span>
+                    <h2>We could not match a business type</h2>
+                    <p>Your answers did not point to one of the four types{% if description_given %}, and your description could not be read as one of them{% endif %}. The standard 20 questions suit any business.</p>
+                    {% endif %}
+                </div>
+                {% if state == 'clear' %}
+                <div class="confidence-chip" title="Share of the points from your answers that went to this business type"><strong>{{ (outcome.confidence * 100)|round|int }}%</strong><span>confidence</span></div>
+                {% elif state == 'close' %}
+                <div class="confidence-chip chip-amber" title="Share of the points from your answers that went to the leading type"><strong>{{ (outcome.confidence * 100)|round|int }}%</strong><span>not certain</span></div>
+                {% elif state == 'description' %}
+                <div class="confidence-chip chip-grey" title="No percentage is shown because your four answers gave no points to count"><strong>Low</strong><span>confidence</span></div>
+                {% else %}
+                <div class="confidence-chip chip-grey" title="Nothing in your answers or description pointed to a type"><strong>None</strong><span>no match</span></div>
+                {% endif %}
+            </div>
+
+            {% if breakdown %}
+            <h3 class="suggestion-why">How your answers were shared</h3>
+            <div class="share-list">
+                {% for row in breakdown %}
+                <div class="share-row {{ 'share-leader' if loop.first and not tied else '' }}">
+                    <span>{{ row.name }}</span>
+                    <div class="share-bar" aria-hidden="true"><span style="width: {{ row.share }}%"></span></div>
+                    <strong>{{ row.share }}%</strong>
+                </div>
+                {% endfor %}
+            </div>
+            <h3 class="suggestion-why">What each answer pointed to</h3>
+            <ul class="reason-list">
+                {% for reason in outcome.reasons %}
+                <li><span>{{ reason.label }}:</span> {{ reason.answer }} <em>&rarr; {{ reason.points_to|join(' or ') }}</em></li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if state == 'description' %}
+            <h3 class="suggestion-why">How your description was read</h3>
+            <ul class="reason-list">
+                <li><span>Read by:</span> {% if description_source == 'ai' %}an AI model that may only reply with one of the four type names{% else %}a keyword match, with no AI involved{% endif %} <em>&rarr; {{ suggested.name }}</em></li>
+                {% if description_evidence %}
+                <li><span>Words that support it:</span> {{ description_evidence|join(', ') }}</li>
+                {% else %}
+                <li><span>Words that support it:</span> none from our keyword list, so this rests on the AI reading alone</li>
+                {% endif %}
+                <li><span>Your four answers:</span> gave no points to any type</li>
+            </ul>
+            {% endif %}
+
+            {% if description_given and state in ['clear', 'close'] %}
+            {% if described_as and outcome.description_agrees %}
+            <p class="description-check check-agrees"><i class="bi bi-check-circle-fill"></i><span>Your description also reads as <strong>{{ described_as.name }}</strong>.</span></p>
+            {% elif described_as %}
+            <p class="description-check check-differs"><i class="bi bi-exclamation-circle-fill"></i><span>Your description reads as <strong>{{ described_as.name }}</strong>, which differs from your answers. It does not change the result above, so please check the choice below.</span></p>
+            {% else %}
+            <p class="description-check check-unread"><i class="bi bi-info-circle-fill"></i><span>Your description could not be matched to one of the four types, so it was not used.</span></p>
+            {% endif %}
+            {% endif %}
+
+            {% if state == 'clear' %}
+            <p class="intake-note">Confidence is the share of points from your four answers that went to this type. The result comes from simple rules you can see here, not from a trained model. A description is only used as a cross-check and never changes the percentage.</p>
+            {% elif state == 'close' %}
+            <p class="intake-note">We pre-select a type only when one has at least 60% of the points. The result comes from simple rules you can see here, not from a trained model. A description is only used as a cross-check and never changes the percentage.</p>
+            {% elif state == 'description' %}
+            <p class="intake-note">Confidence is shown as Low, not as a percentage, because a percentage here would not be something we could show the working for. Treat this as a starting point, which is why nothing has been selected for you.</p>
+            {% elif state == 'none' %}
+            <p class="intake-note">A percentage is shown only when your four answers give points that can be counted. You can still pick a type below if one fits.</p>
+            {% endif %}
+        </div>
+
+        <form method="post" action="{{ url_for('tailored_confirm') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <fieldset class="intake-card">
+                <legend>{% if state == 'clear' %}Confirm or change your business type{% else %}Which of these fits best?{% endif %}</legend>
+                <div class="intake-options">
+                    {% for sector in sectors %}
+                    <label class="intake-option" for="sector-{{ sector.id }}">
+                        <input type="radio" name="sector" id="sector-{{ sector.id }}" value="{{ sector.id }}" required {% if state == 'clear' and suggested.id == sector.id %}checked{% endif %}>
+                        <span><strong>{{ sector.name }}</strong><small>{{ sector.description }} For example: {{ sector.examples }}.</small></span>
+                    </label>
+                    {% endfor %}
+                    <label class="intake-option" for="sector-core">
+                        <input type="radio" name="sector" id="sector-core" value="core" required>
+                        <span><strong>None of these fit</strong><small>Continue with the standard 20 questions only.</small></span>
+                    </label>
+                </div>
+            </fieldset>
+
+            {% if authenticated_email %}
+            <p class="intake-note"><i class="bi bi-info-circle"></i> You are signed in, so the business type you choose is saved with this assessment in your score history.</p>
+            {% endif %}
+
+            <div class="assessment-submit-card">
+                <div><h2>Next: your questions</h2><p>The 20 core questions, plus a short set for the business type you choose.</p></div>
+                <button type="submit" class="btn btn-primary btn-lg">Continue <i class="bi bi-arrow-right ms-2"></i></button>
+            </div>
+        </form>
+        <p class="assessment-disclaimer"><a href="{{ url_for('tailored_intake') }}">Back to the business questions</a> · <a href="{{ url_for('tailored_sources') }}" target="_blank" rel="noopener">Where the sector questions come from</a></p>
+    </div>
+</section>
+{% endblock %}

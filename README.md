@@ -28,7 +28,7 @@ Business owners work through a 20-question assessment and get:
 
 - **Plain English, not jargon** — written for business owners, not IT staff
 - **AI-powered guidance** — the assistant explains _why_ each recommendation matters, in context
-- **Session-based, no sign-up** — start the assessment immediately, nothing is stored in a database
+- **Guest or registered use** — guests can start immediately with no sign-up; registered users can save assessment history and review score trends
 - **Transparent scoring** — every score is a simple, explainable rule (no black-box ML)
 
 ---
@@ -61,7 +61,13 @@ Business owners work through a 20-question assessment and get:
 
 ### 🔒 Privacy
 
-- **No database** — results live only in your browser session for the duration of your visit
+- **Guest results stay session-based** — the original assessment remains available without creating an account
+- **Account history stores aggregate results** — registered accounts store the email, assessment date, overall score, risk tier, category scores and recommendations; raw question answers are not written to the database
+- **Account deletion** — users can delete their account and its saved assessment history from the history page
+- **Password handling** — passwords are hashed; registration requires at least 15 characters and checks a partial hash against Have I Been Pwned using its k-anonymity range API
+- **Tailored assessment (2.0)** — four intake questions suggest one of four business types (retail, hospitality, trades, professional services) using transparent point rules, with a confidence value and the reasons shown; the user confirms, changes or skips the suggestion. A short, predefined question set for that type is added to the unchanged 20 core questions and scored separately. Low-confidence results ask the user to choose or continue with the core questions only
+- **Privacy notice** — a plain-English notice at `/privacy` explains what is stored; the accepted notice version is recorded at registration
+- **AI spend controls** — the assistant endpoint is limited per visitor and per day; once a limit is reached it answers from the offline rule-based assistant
 
 ---
 
@@ -75,7 +81,7 @@ Business owners work through a 20-question assessment and get:
 | **Risk scoring**    | Pure Python, rule-based (equal-weighted categories) — no ML     |
 | **PDF generation**  | ReportLab                                                       |
 | **Charts**          | Chart.js (radar chart)                                          |
-| **Session storage** | Flask server-side session (no database)                         |
+| **Persistence**     | Flask session for guests; SQLAlchemy with SQLite locally and PostgreSQL by `DATABASE_URL` for registered history |
 
 > **⚠️ Tech stack note:** the original Assessment 1/2 proposal specified **Streamlit + FastAPI**, with **scikit-learn** for risk scoring. During development the team moved to a **Flask monolith with pure-Python rule-based scoring** for faster iteration and simpler deployment. The AI assistant, questionnaire structure (20 questions / 6 categories), and prioritised-recommendations approach all remained as originally planned.
 
@@ -128,14 +134,20 @@ Visit `http://127.0.0.1:5000` in your browser.
 cybershield-smb/
 ├── ai/
 │   ├── assistant.py           # Rule-based fallback assistant (works offline)
-│   └── openai_assistant.py    # OpenAI GPT-4o-mini integration, topic filter + moderation
+│   ├── openai_assistant.py    # OpenAI GPT-4o-mini integration, topic filter + moderation
+│   └── business_classifier.py # Labels an optional business description (AI, with keyword fallback)
 ├── data/
-│   └── questions.py           # 20 questions across 6 categories
+│   ├── questions.py           # 20 core questions across 6 categories (unchanged since 1.0)
+│   └── sectors.py             # Business types, intake questions, sector question sets (draft content)
+├── database.py                # SQLAlchemy models (users, assessments, history, consent, rate limits)
 ├── engine/
-│   └── risk_engine.py         # Rule-based scoring: category scores, risk level, summary
+│   ├── risk_engine.py         # Rule-based scoring: category scores, risk level, summary
+│   ├── classifier.py          # Rule-based business-type classifier with confidence value
+│   └── sector_engine.py       # Separate sector score and sector recommendations
 ├── static/
 │   ├── css/
-│   │   └── style.css
+│   │   ├── style.css          # Core styles
+│   │   └── account.css        # 2.0 additions: account banner, history, privacy page
 │   └── images/
 │       ├── cybershield-logo.svg
 │       └── lock.svg
@@ -143,13 +155,22 @@ cybershield-smb/
 │   ├── base.html               # Shared layout, nav, Bootstrap/Chart.js includes
 │   ├── home.html
 │   ├── assessment.html
-│   ├── result.html             # Dashboard: score, radar chart, action plan, Ask AI
-│   └── chatbot.html
+│   ├── result.html             # Dashboard: score, radar chart, action plan, Ask AI, save banner
+│   ├── chatbot.html
+│   ├── auth.html               # Register and log in (2.0)
+│   ├── history.html            # Score history, trend chart, account deletion (2.0)
+│   ├── privacy.html            # Privacy notice (2.0)
+│   └── tailored_*.html         # Tailored assessment: intake, confirm, questions (2.0)
+├── tests/                      # pytest suite: guest regression, accounts, assistant, tailored assessment
+├── e2e/                        # Browser end-to-end tests: run_e2e.py drives every feature and writes a report
+├── .github/workflows/tests.yml # Runs both test suites on every push to GitHub
 ├── utils/
 │   └── recommendations.py     # Builds the prioritised action plan from unanswered items
 ├── .env.example
 ├── app.py                      # Flask application entry point and routes
+├── render.yaml                 # Render deployment settings
 ├── requirements.txt
+├── requirements-dev.txt        # Adds pytest and Playwright
 └── README.md
 ```
 
@@ -173,6 +194,82 @@ Use **"Ask AI"** in the navigation for open-ended cybersecurity questions, or cl
 
 Click **"Download PDF"** on the results page to save or share a summary report.
 
+### 5. Try the tailored assessment (optional)
+
+Choose **Tailored assessment** in the navigation. Answer four questions about your business, check the suggested business type and the reasons for it, then answer the 20 core questions plus a short set for that type. The results page shows your usual overall score and a separate score for the sector questions. The standard assessment is unchanged and remains the default.
+
+Each sector question is traced to published frameworks (NIST CSF 2.0, ASD Essential Eight, the ACSC Small Business Cyber Security Guide, PCI DSS and OAIC guidance). The mapping is in `data/sectors.py` and is shown to users at `/tailored/sources` and on the results page.
+
+The 20 core questions carry the same kind of mapping in `data/questions.py`: a plain-English reason, the NIST CSF 2.0 function, and at least two sources (always a NIST CSF 2.0 subcategory, plus the Essential Eight strategy where one fits and the ACSC guide section). The mapping is for traceability only and does not change the questions, their wording or the scoring.
+
+> The sector questions and their framework references are draft content awaiting team review. The header of `data/sectors.py` records how far each reference has been checked.
+
+### 6. Save your progress (optional)
+
+Create an account from the results page to save the result. Every assessment you submit while signed in is added to **Score history**, which shows the trend, the change since the previous attempt and each attempt's category breakdown. You can delete the account and its history from the same page.
+
+---
+
+## ✅ Running the Tests
+
+There are two automatic test suites. Install both once:
+
+```bash
+pip install -r requirements-dev.txt
+python -m playwright install chromium firefox webkit
+```
+
+### 1. Unit and integration tests (pytest, about 10 seconds)
+
+```bash
+pytest -v
+```
+
+These call the app directly, without a browser. They use a temporary database and never call OpenAI or Have I Been Pwned. There are four files:
+
+- `tests/test_guest_regression.py` — the guest-path regression suite (20-question instrument, scoring rules, tier boundaries, recommendations, PDF, no-sign-up journey). Run it at every sprint review.
+- `tests/test_accounts.py` — registration rules, login throttling, guest-to-account import, score history, user isolation and account deletion.
+- `tests/test_chat.py` — assistant input handling, spend cap and fallback.
+- `tests/test_adaptive.py` — business-type classifier, confidence and low-confidence fallback, the three-step tailored flow, separate sector scoring and proof that the core score does not change.
+
+### 2. Browser end-to-end tests (about 1–2 minutes)
+
+```bash
+python e2e/run_e2e.py
+```
+
+This starts the app on a spare port with an empty temporary database, opens Chromium, and uses the site the way an owner would: guest assessment, PDF, Ask AI, assistant, registering (including refused passwords), score history, logging out and in, the tailored assessment in all four suggestion states, the sources page, CSRF and rate-limit checks, account deletion and phone-width layout. Expected scores and confidence values are worked out from the app's own scoring rules and compared with what is on screen. Each step and check is printed as it runs, and an HTML report with a screenshot of every step opens at the end (`e2e/report/index.html`).
+
+| Option | Effect |
+| :----- | :----- |
+| `--browsers all` | Runs the journey in Chromium (Chrome, Edge), Firefox and WebKit (Safari's engine) at the same time, each with its own copy of the app and database. The report then opens on a comparison table with a column per browser. You can also list some, e.g. `--browsers chromium,webkit` |
+| `--browsers chrome` | Uses the Google Chrome already installed on your computer instead of Playwright's own Chromium, so nothing needs downloading. Useful on older macOS versions that Playwright's downloads no longer support |
+| `--headless` | No visible browser; faster |
+| `--demo` | Presentation pace (about 7 minutes): a caption box shows the current step, why it matters and each check as it passes; the element about to be clicked or typed into is outlined. Captions are hidden in the report screenshots |
+| `--demo --step` | As `--demo`, but waits for Enter before each step, so you can talk through it (single browser only) |
+| `--slow 400` | Just slows each action by the given milliseconds, without captions |
+| `--live-ai` | Calls GPT-4o-mini for real with the key in `.env` (adds the off-topic refusal check) |
+| `--no-open` | Do not open the report at the end |
+
+Your own database is never touched, and by default no OpenAI or breach-check requests are made. The exit code is 0 only when every step passes.
+
+### Automatic runs on GitHub
+
+`.github/workflows/tests.yml` runs both suites on every push and pull request, with the browser journey in all three engines. The end-to-end report is attached to each run as a downloadable artifact.
+
+### Account and history routes
+
+| Route | Purpose |
+| :---- | :------ |
+| `/register`, `/login`, `POST /logout` | Account forms (CSRF protected) |
+| `/history` | Score history page (signed-in users) |
+| `POST /account/delete` | Delete account and saved history (password required) |
+| `/privacy` | Privacy notice |
+| `/tailored/sources` | Framework sources for every sector question |
+| `/tailored`, `/tailored/confirm`, `/tailored/assessment` | Tailored assessment: intake, confirm business type, core plus sector questions |
+| `/api/auth/register`, `/api/auth/login`, `/api/auth/logout`, `/api/auth/me` | JSON equivalents of the account forms |
+| `/api/assessment-history` | Saved assessments as JSON (signed-in users) |
+
 ---
 
 ## 🔑 Environment Variables
@@ -183,9 +280,28 @@ Create a `.env` file in the project root (copy `.env.example` as a starting poin
 # Required: your OpenAI API key
 OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-# Optional: Flask session secret (a default is used if not set — change this for any real deployment)
+# Optional: Flask session secret (set a strong secret for any deployment)
 CYBERSHIELD_SECRET_KEY=your-secret-key-here
+
+# Optional: database URL; defaults to instance/cybershield.sqlite
+# Example: postgresql://user:password@host:5432/database
+DATABASE_URL=
+
+# Set true when serving the app over HTTPS (Render deployment sets this)
+CYBERSHIELD_COOKIE_SECURE=false
+
+# Set true only when the app runs behind one trusted proxy (Render sets this),
+# so rate limits see each visitor's real IP address
+CYBERSHIELD_TRUST_PROXY=false
+
+# Optional assistant limits: requests per visitor per 15 minutes, and per day overall
+CYBERSHIELD_CHAT_LIMIT=20
+CYBERSHIELD_AI_DAILY_CAP=300
 ```
+
+> **Deploying on Render:** set `DATABASE_URL` to a hosted PostgreSQL database in the Render dashboard. Without it the app uses a SQLite file on Render's temporary disk, and accounts and history are lost on redeploy or restart.
+
+On first app startup, SQLAlchemy creates the required tables. The history page is available after logging in at `/history`.
 
 ---
 
@@ -201,7 +317,7 @@ CYBERSHIELD_SECRET_KEY=your-secret-key-here
 
 ## 📝 Licence
 
-This project was built for educational purposes as part of the ITW601 — Information Technology Work Integrated Learning capstone at Torrens University Australia. No open-source licence (e.g. MIT) has been applied yet.
+This project was built for educational purposes as part of the ITW601 and ITA602 Work Integrated Learning capstone subjects at Torrens University Australia. No open-source licence (e.g. MIT) has been applied yet.
 
 ---
 

@@ -1,0 +1,181 @@
+/* Account and history additions for CyberShield SMB 2.0 (Sprint 1). Kept separate so style.css stays as validated in 1.0. */
+
+/* Results page: save / signed-in banner */
+.account-banner {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    background: #eef5ff;
+    border: 1px solid #cfe0f7;
+    border-radius: 14px;
+    color: #243447;
+}
+.account-banner-saved { background: #edf8f1; border-color: #bfe3cc; }
+.account-banner-icon { font-size: 1.6rem; color: #0f4c81; line-height: 1; }
+.account-banner-saved .account-banner-icon { color: #1c7c4a; }
+.account-banner-text { flex: 1 1 18rem; display: flex; flex-direction: column; gap: .15rem; }
+.account-banner-text span { font-size: .92rem; color: #4a5f75; }
+.account-banner-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+
+/* Password field */
+.password-field { position: relative; }
+.password-field .form-control { padding-right: 4.5rem; }
+.password-toggle {
+    position: absolute;
+    top: 50%;
+    right: .5rem;
+    transform: translateY(-50%);
+    border: 0;
+    background: transparent;
+    color: #0f4c81;
+    font-weight: 600;
+    font-size: .85rem;
+    padding: .25rem .5rem;
+    border-radius: 6px;
+}
+.password-toggle:hover, .password-toggle:focus-visible { background: #e7f0fa; outline: 2px solid #2563eb; outline-offset: 1px; }
+.password-counter { margin: .35rem 0 .25rem; font-size: .85rem; color: #6c7f95; }
+.password-counter-ok { color: #1c7c4a; font-weight: 600; }
+
+/* History table: change indicators and category breakdown */
+.delta { font-weight: 600; font-size: .9rem; white-space: nowrap; }
+.delta-up { color: #1c7c4a; }
+.delta-down { color: #b3402a; }
+.delta-none { color: #6c7f95; font-weight: 500; }
+.history-breakdown summary { cursor: pointer; color: #0f4c81; font-weight: 600; font-size: .9rem; }
+.history-breakdown ul { list-style: none; margin: .5rem 0 0; padding: 0; min-width: 12rem; }
+.history-breakdown li { display: flex; justify-content: space-between; gap: 1rem; font-size: .85rem; padding: .15rem 0; border-bottom: 1px solid #e6edf5; }
+
+/* Privacy page and footer link */
+.privacy-section { padding: 3rem 0 4rem; }
+.privacy-container { max-width: 800px; }
+.privacy-card { background: #fff; border: 1px solid #e0e8f2; border-radius: 16px; padding: 2rem; color: #243447; line-height: 1.65; }
+.privacy-card h2 { font-size: 1.15rem; color: #0f4c81; margin: 1.5rem 0 .5rem; }
+.privacy-card h2:first-child { margin-top: 0; }
+.footer-link { color: inherit; text-decoration: underline; margin-left: .35rem; }
+
+@media (max-width: 575.98px) {
+    .account-banner { align-items: flex-start; }
+    .privacy-card { padding: 1.25rem; }
+}
+
+/* History page: stack the chart and the records table so the table has room (fixes wrapped dates and a cut-off column). */
+.history-grid { grid-template-columns: 1fr; }
+.history-table td, .history-table th { white-space: nowrap; }
+.history-table td:last-child { white-space: normal; }
+.history-breakdown .breakdown-sector { border-top: 1px dashed #c9d6e5; color: #0f4c81; }
+.dashboard-banner .dashboard-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+
+/* Tailored assessment (Sprint 2): intake and confirmation */
+.intake-container { max-width: 820px; }
+.intake-card { background: #fff; border: 1px solid #e3ebf4; border-radius: 16px; box-shadow: 0 7px 20px rgba(23,43,77,.035); padding: 1.5rem; margin: 0 0 1.25rem; min-width: 0; }
+.intake-card legend { float: left; width: 100%; }
+.intake-card legend, .intake-legend { display: flex; align-items: center; gap: .6rem; font-size: 1rem; font-weight: 600; color: #172b4d; margin-bottom: .9rem; }
+.intake-step { display: inline-grid; place-items: center; width: 1.7rem; height: 1.7rem; flex: none; border-radius: 50%; background: #e7f0fa; color: #0f4c81; font-size: .8rem; font-weight: 700; }
+.intake-options { display: grid; gap: .5rem; }
+.intake-option { display: flex; align-items: flex-start; gap: .7rem; padding: .7rem .9rem; border: 1px solid #dbe5f0; border-radius: 10px; cursor: pointer; font-size: .9rem; color: #33475b; }
+.intake-option:hover { border-color: #9dbbe0; background: #f7fafe; }
+.intake-option:has(input:checked) { border-color: #2563eb; background: #eef5ff; }
+.intake-option:focus-within { outline: 2px solid #2563eb; outline-offset: 2px; }
+.intake-option input { margin-top: .2rem; accent-color: #2563eb; flex: none; }
+.intake-option small { display: block; color: #6c7f95; font-size: .8rem; margin-top: .1rem; }
+.intake-note { color: #6c7f95; font-size: .8rem; line-height: 1.6; margin: .75rem 0 0; }
+.suggestion-head { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.suggestion-head > div:nth-child(2) { flex: 1 1 14rem; }
+.suggestion-head h2 { font-size: 1.4rem; margin: .1rem 0; color: #172b4d; }
+.suggestion-head p { margin: 0; color: #5d6e84; font-size: .88rem; }
+.confidence-chip { display: grid; justify-items: center; padding: .5rem .9rem; border-radius: 12px; background: #edf8f1; color: #1c7c4a; }
+.confidence-chip strong { font-size: 1.3rem; line-height: 1.1; }
+.confidence-chip span { font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; }
+.suggestion-why { font-size: .85rem; text-transform: uppercase; letter-spacing: .06em; color: #73849a; margin: 1.25rem 0 .5rem; }
+.reason-list { list-style: none; padding: 0; margin: 0; display: grid; gap: .35rem; font-size: .88rem; color: #33475b; }
+.reason-list span { color: #6c7f95; }
+.reason-list em { color: #0f4c81; font-style: normal; font-weight: 600; }
+
+/* Tailored assessment: sector questions and results */
+.sector-question-card { border-color: #b9d2f0; }
+.question-reason { color: #0f4c81; }
+.sector-score-card { display: grid; justify-items: center; align-content: center; text-align: center; gap: .4rem; }
+.sector-score-value { font-size: 3rem; line-height: 1; color: #0f4c81; }
+.sector-score-value small { font-size: 1.2rem; }
+.sector-score-caption { margin: 0; color: #33475b; font-size: .9rem; }
+.sector-score-note { margin: 0; color: #6c7f95; font-size: .78rem; }
+.sector-checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: .9rem; }
+.sector-checklist li { display: flex; gap: .7rem; align-items: flex-start; }
+.sector-checklist i { font-size: 1.1rem; margin-top: .1rem; }
+.sector-ok i { color: #1c7c4a; }
+.sector-gap i { color: #b3402a; }
+.sector-checklist strong { display: block; font-size: .9rem; color: #243447; font-weight: 600; }
+.sector-checklist span { font-size: .8rem; color: #6c7f95; }
+.tailored-banner { margin-top: 2.5rem; margin-bottom: 0; background: #f7fafe; }
+.intake-card legend + * { clear: left; }
+
+/* Navigation: keep labels on one line; on mid-size desktops the email gives way to the links. */
+.site-nav .nav-link, .site-nav .nav-cta, .site-nav .btn { white-space: nowrap; }
+@media (min-width: 992px) and (max-width: 1199.98px) { .site-nav .nav-optional { display: none; } }
+@media (min-width: 992px) and (max-width: 1399.98px) { .site-nav .nav-email { display: none; } }
+
+/* Traceability: framework sources for sector questions */
+.sector-checklist .source-line { display: block; margin-top: .15rem; color: #0f4c81; font-size: .74rem; }
+.sources-table { font-size: .82rem; }
+.sources-table th { color: #73849a; font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; }
+.sources-table td { color: #33475b; vertical-align: top; }
+.sources-table ul { margin: 0; padding-left: 1rem; }
+.sources-table li { margin-bottom: .3rem; }
+.sources-table small { color: #6c7f95; display: block; }
+.fit-tag { display: inline-block; padding: 0 .4rem; border-radius: 6px; font-size: .68rem; font-weight: 600; background: #edf8f1; color: #1c7c4a; }
+.fit-tag.fit-related { background: #fff4e0; color: #8a5a00; }
+.framework-list { font-size: .85rem; color: #33475b; padding-left: 1.1rem; }
+.framework-list small { color: #6c7f95; }
+
+/* Confirm page: the match card is always shown; its colour and chip follow the result state */
+.match-clear { border-color: #bfe3cc; }
+.match-close { border-color: #f0d9a8; }
+.confidence-chip.chip-amber { background: #fff4e0; color: #8a5a00; }
+.confidence-chip.chip-grey { background: #eef2f7; color: #5d6e84; }
+.share-list { display: grid; gap: .45rem; }
+.share-row { display: grid; grid-template-columns: 11.5rem 1fr 2.8rem; align-items: center; gap: .7rem; font-size: .86rem; color: #33475b; }
+.share-row strong { text-align: right; color: #33475b; font-weight: 600; }
+.share-bar { height: .5rem; background: #e7eef7; border-radius: 99px; overflow: hidden; }
+.share-bar span { display: block; height: 100%; background: #9dbbe0; border-radius: 99px; }
+.share-leader .share-bar span { background: #2563eb; }
+.share-leader > span, .share-leader strong { color: #172b4d; font-weight: 600; }
+.description-check { display: flex; gap: .55rem; align-items: flex-start; margin: 1rem 0 0; padding: .65rem .8rem; border-radius: 10px; font-size: .86rem; line-height: 1.5; }
+.description-check i { margin-top: .1rem; }
+.check-agrees { background: #edf8f1; color: #17603a; }
+.check-differs { background: #fff4e0; color: #7a4f00; }
+.check-unread { background: #eef2f7; color: #4a5f75; }
+@media (max-width: 575.98px) { .share-row { grid-template-columns: 6.5rem 1fr 2.6rem; } }
+
+/* Tailored assessment: three-step progress indicator */
+.tailored-steps { display: flex; gap: .5rem; list-style: none; padding: 0; margin: 0 0 1.25rem; }
+.tailored-steps li { flex: 1 1 0; display: flex; align-items: center; gap: .5rem; padding: .5rem .7rem; border: 1px solid #e3ebf4; border-radius: 10px; background: #fff; color: #6c7f95; font-size: .8rem; line-height: 1.25; }
+.tailored-steps .step-number { display: inline-grid; place-items: center; flex: none; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: #eef2f7; color: #5d6e84; font-size: .75rem; font-weight: 700; }
+.tailored-steps .step-current { border-color: #2563eb; color: #172b4d; font-weight: 600; }
+.tailored-steps .step-current .step-number { background: #2563eb; color: #fff; }
+.tailored-steps .step-done { color: #17603a; }
+.tailored-steps .step-done .step-number { background: #edf8f1; color: #1c7c4a; }
+@media (max-width: 575.98px) { .tailored-steps li { flex-direction: column; align-items: flex-start; gap: .3rem; font-size: .74rem; } }
+
+/* Sources page: core and sector groups */
+.sources-jump { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+.sources-jump a { padding: .3rem .8rem; border-radius: 999px; background: #fff; border: 1px solid #cfe0f5; color: #0f4c81; font-size: .82rem; font-weight: 500; text-decoration: none; }
+.sources-jump a:hover, .sources-jump a:focus-visible { background: #0f4c81; border-color: #0f4c81; color: #fff; }
+.sources-group { margin: 2rem 0 .25rem; font-size: 1.35rem; color: #10243e; scroll-margin-top: 90px; }
+.sources-group-note { color: #5d6e84; font-size: .9rem; margin-bottom: 1rem; }
+[id^="sector-"] { scroll-margin-top: 90px; }
+.function-tag { display: inline-block; margin: 0 .25rem .25rem 0; padding: 0 .4rem; border-radius: 6px; font-size: .68rem; font-weight: 600; background: #e8f0fb; color: #0f4c81; }
+.recommendation-body .source-line { margin: .2rem 0 0; color: #0f4c81; font-size: .76rem; }
+
+/* Error pages */
+.error-panel { max-width: 560px; background: #fff; border: 1px solid #e7edf5; border-radius: 18px; padding: 44px 32px; box-shadow: 0 8px 26px rgba(33, 64, 100, .05); }
+.error-icon { width: 64px; height: 64px; margin: 0 auto 14px; display: grid; place-items: center; border-radius: 16px; background: #e8f0fb; color: #0f4c81; font-size: 28px; }
+.error-code { display: block; font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #5d6e84; }
+.error-panel h1 { font-size: clamp(1.5rem, 3vw, 2rem); margin: 6px 0 10px; color: #10243e; }
+.error-panel p { color: #5d6e84; margin: 0; }
+.version-tag { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 6px; background: rgba(15, 76, 129, .1); color: #0f4c81; font-size: .72rem; font-weight: 600; }
+.new-badge { display: inline-block; margin-bottom: 10px; padding: 1px 8px; border-radius: 999px; background: #edf8f1; color: #1c7c4a; font-size: .7rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.error-section { min-height: calc(100vh - 190px); display: flex; align-items: center; }

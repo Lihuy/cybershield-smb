@@ -1,1 +1,8 @@
 .env
+instance/
+__pycache__/
+.pytest_cache/
+venv/
+.venv/
+.DS_Store
+e2e/report/

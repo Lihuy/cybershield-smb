@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% set registering = mode == "register" %}
+{% block title %}{{ "Create account" if registering else "Log in" }} | CyberShield SMB{% endblock %}
+
+{% block scripts %}
+<script>
+    const passwordInput = document.getElementById('password');
+    const passwordToggle = document.getElementById('passwordToggle');
+    const passwordCounter = document.getElementById('passwordCounter');
+    passwordToggle.addEventListener('click', () => {
+        const show = passwordInput.type === 'password';
+        passwordInput.type = show ? 'text' : 'password';
+        passwordToggle.textContent = show ? 'Hide' : 'Show';
+        passwordToggle.setAttribute('aria-pressed', show ? 'true' : 'false');
+    });
+    if (passwordCounter) {
+        passwordInput.addEventListener('input', () => {
+            const length = passwordInput.value.length;
+            passwordCounter.textContent = length >= 15 ? `${length} characters - long enough` : `${length} of 15 characters`;
+            passwordCounter.classList.toggle('password-counter-ok', length >= 15);
+        });
+    }
+</script>
+{% endblock %}
+{% block content %}
+<section class="page-banner">
+    <div class="container">
+        <span class="section-label">PERSISTENT USER IDENTITY</span>
+        <h1>{{ "Create your account" if registering else "Log in to CyberShield SMB" }}</h1>
+        <p>{{ "Save your assessment history and review score trends over time." if registering else "Continue to your saved assessment history and score trends." }}</p>
+    </div>
+</section>
+
+<section class="auth-section">
+    <div class="container auth-container">
+        <article class="auth-card">
+            <div class="auth-card-icon"><i class="bi {{ 'bi-person-plus' if registering else 'bi-person-lock' }}"></i></div>
+            <h2>{{ "Create an account" if registering else "Welcome back" }}</h2>
+            <p class="auth-intro">A free guest assessment is always available. You can continue without signing up.</p>
+
+            {% if error %}<div class="form-error" role="alert"><i class="bi bi-exclamation-circle"></i>{{ error }}</div>{% endif %}
+
+            <form method="post" action="{{ url_for('register_form' if registering else 'login_form') }}" class="auth-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <label for="email">Email address</label>
+                <input class="form-control" id="email" name="email" type="email" autocomplete="email" maxlength="320" value="{{ email or '' }}" required>
+                <label for="password">Password</label>
+                <div class="password-field">
+                    <input class="form-control" id="password" name="password" type="password" autocomplete="{{ 'new-password' if registering else 'current-password' }}" minlength="{{ 15 if registering else 1 }}" maxlength="1024" required>
+                    <button class="password-toggle" id="passwordToggle" type="button" aria-controls="password" aria-pressed="false">Show</button>
+                </div>
+                {% if registering %}
+                <p class="password-counter" id="passwordCounter" aria-live="polite">0 of 15 characters</p>
+                <p class="auth-help">Use at least 15 characters; a short phrase of unrelated words works well. We check a partial password hash with <a href="https://haveibeenpwned.com/Passwords" target="_blank" rel="noopener noreferrer">Have I Been Pwned</a>; your password itself is never sent. There is no password reset yet, so choose a password you can keep.</p>
+                <div class="privacy-consent">
+                    <label class="form-check-label" for="privacy_consent">
+                        <input class="form-check-input me-2" id="privacy_consent" name="privacy_consent" type="checkbox" value="yes" required>
+                        I understand that my email, assessment dates, overall scores, category scores and recommendations are saved to my account. Raw question answers are not saved to the database. I can delete my account and its saved history. <a href="{{ url_for('privacy') }}" target="_blank" rel="noopener">Read the privacy notice</a>.
+                    </label>
+                </div>
+                {% endif %}
+                <button class="btn btn-primary w-100" type="submit">{{ "Create account" if registering else "Log in" }}</button>
+            </form>
+
+            {% if registering %}
+            <p class="auth-switch">Already have an account? <a href="{{ url_for('login_form') }}">Log in</a></p>
+            {% else %}
+            <p class="auth-switch">New to CyberShield SMB? <a href="{{ url_for('register_form') }}">Create an account</a></p>
+            {% endif %}
+            <p class="auth-guest-link"><a href="{{ url_for('assessment') }}">Continue as a guest without an account</a></p>
+        </article>
+    </div>
+</section>
+{% endblock %}

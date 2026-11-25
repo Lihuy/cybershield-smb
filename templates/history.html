@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Assessment history | CyberShield SMB{% endblock %}
+{% block head %}<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>{% endblock %}
+
+{% block content %}
+<section class="dashboard-banner">
+    <div class="container d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-3">
+        <div>
+            <div class="eyebrow eyebrow-light"><i class="bi bi-clock-history"></i> Registered account</div>
+            <h1>Your score history</h1>
+            <p>{{ email }} · {{ entries|length }} saved assessment{{ '' if entries|length == 1 else 's' }}</p>
+        </div>
+        <div class="dashboard-actions"><a class="btn btn-light" href="{{ url_for('assessment') }}"><i class="bi bi-arrow-repeat me-2"></i>Take another assessment</a><a class="btn btn-dashboard-outline" href="{{ url_for('tailored_intake') }}"><i class="bi bi-sliders me-2"></i>Tailored assessment</a></div>
+    </div>
+</section>
+
+<section class="dashboard-section">
+    <div class="container">
+        <div class="history-grid">
+            <article class="history-chart-card">
+                <div class="section-title-row">
+                    <span class="section-label">ASSESSMENT TREND</span>
+                    <h2>Overall security score</h2>
+                    <p>Scores are stored when you submit an assessment while logged in, or when you bring a guest result into your account.</p>
+                </div>
+                {% if entries %}
+                <div class="history-chart-wrap"><canvas id="scoreHistoryChart" aria-label="Line chart of assessment scores over time"></canvas></div>
+                {% else %}
+                <div class="history-empty"><i class="bi bi-clipboard2-data"></i><h3>No saved assessments yet</h3><p>Complete an assessment while logged in to start your score history.</p></div>
+                {% endif %}
+                {% if entries|length == 1 %}<p class="history-note">Complete one more assessment to compare your score over time.</p>{% elif entries|length > 1 %}<p class="history-note">Each point is a separate attempt, so a change reflects the answers given that time. It is not an audit of how secure the business is. The chart shows the overall score from the 20 core questions, so standard and tailored attempts can be compared.</p>{% endif %}
+            </article>
+
+            <article class="history-table-card">
+                <div class="section-title-row"><span class="section-label">SAVED RESULTS</span><h2>Assessment records</h2></div>
+                {% if entries %}
+                <div class="table-responsive">
+                    <table class="table history-table align-middle">
+                        <thead><tr><th scope="col">#</th><th scope="col">Date</th><th scope="col">Score</th><th scope="col">Change</th><th scope="col">Risk tier</th><th scope="col">Business type</th><th scope="col">Sector score</th><th scope="col">Categories</th></tr></thead>
+                        <tbody>
+                            {% for entry in entries|reverse %}
+                            <tr>
+                                <td>{{ entry.attempt }}</td>
+                                <td>{{ entry.time_label }}</td>
+                                <td><strong>{{ entry.score }}/100</strong></td>
+                                <td>{% if entry.delta is none %}<span class="delta delta-none">First</span>{% elif entry.delta > 0 %}<span class="delta delta-up">&#9650; {{ entry.delta }}</span>{% elif entry.delta < 0 %}<span class="delta delta-down">&#9660; {{ -entry.delta }}</span>{% else %}<span class="delta delta-none">No change</span>{% endif %}</td>
+                                <td><span class="risk-badge risk-{{ entry.risk_tier|lower }}">{{ entry.risk_tier }}</span></td>
+                                <td>{{ entry.business_type or 'Standard' }}</td>
+                                <td>{% if entry.sector_score is not none %}{{ entry.sector_score }}%{% else %}<span class="delta delta-none">&ndash;</span>{% endif %}</td>
+                                <td>
+                                    <details class="history-breakdown">
+                                        <summary>View</summary>
+                                        <ul>
+                                            {% for category in entry.category_scores %}<li><span>{{ category.name }}</span><strong>{{ category.score }}%</strong></li>{% endfor %}
+                                            {% if entry.sector_row %}<li class="breakdown-sector"><span>{{ entry.sector_row.name }} (separate)</span><strong>{{ entry.sector_row.score }}%</strong></li>{% endif %}
+                                        </ul>
+                                    </details>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="history-help">Your guest assessment remains available in the current browser session, but guest results are not saved to an account until you register or log in.</p>
+                {% endif %}
+            </article>
+        </div>
+
+        <details class="account-delete"{% if delete_error %} open{% endif %}>
+            <summary>Delete account and saved assessment history</summary>
+            <div class="account-delete-content">
+                {% if delete_error %}<div class="form-error" role="alert">{{ delete_error }}</div>{% endif %}
+                <p>This permanently deletes your account, consent record, and saved assessments. Enter your password to confirm.</p>
+                <form method="post" action="{{ url_for('delete_account') }}" class="account-delete-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <label class="visually-hidden" for="delete_password">Password</label>
+                    <input class="form-control" id="delete_password" name="password" type="password" autocomplete="current-password" required>
+                    <button class="btn btn-outline-danger" type="submit">Delete account</button>
+                </form>
+            </div>
+        </details>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{% if entries %}
+<script>
+    const historyLabels = {{ entries|map(attribute='chart_label')|list|tojson }};
+    const historyScores = {{ entries|map(attribute='score')|list|tojson }};
+    new Chart(document.getElementById('scoreHistoryChart'), {
+        type: 'line',
+        data: {
+            labels: historyLabels,
+            datasets: [{
+                label: 'Overall score',
+                data: historyScores,
+                borderColor: '#2563eb',
+                backgroundColor: 'rgba(37, 99, 235, .14)',
+                pointBackgroundColor: '#0f4c81',
+                pointRadius: 5,
+                borderWidth: 3,
+                tension: .25,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { min: 0, max: 100, ticks: { stepSize: 20 }, grid: { color: '#e6edf5' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}

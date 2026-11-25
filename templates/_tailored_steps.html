@@ -1,0 +1,9 @@
+{# Progress indicator for the three tailored-assessment steps. Set `step` (1 to 3) before including. #}
+<ol class="tailored-steps" aria-label="Tailored assessment steps">
+    {% for label in ['Your business', 'Business type', 'Your questions'] %}
+    <li class="{{ 'step-done' if loop.index < step else ('step-current' if loop.index == step else '') }}" {% if loop.index == step %}aria-current="step"{% endif %}>
+        <span class="step-number">{% if loop.index < step %}<i class="bi bi-check-lg" aria-hidden="true"></i><span class="visually-hidden">Done: </span>{% else %}{{ loop.index }}{% endif %}</span>
+        <span>{{ label }}</span>
+    </li>
+    {% endfor %}
+</ol>

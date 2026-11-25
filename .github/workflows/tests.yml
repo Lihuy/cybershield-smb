@@ -1,0 +1,37 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements-dev.txt
+          python -m playwright install --with-deps chromium firefox webkit
+
+      - name: Unit and integration tests
+        run: pytest -v
+
+      - name: Browser end-to-end tests
+        run: python e2e/run_e2e.py --browsers all --headless --no-open
+
+      - name: Keep the end-to-end report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: e2e/report/
+          retention-days: 30

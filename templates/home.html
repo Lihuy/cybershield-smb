@@ -17,6 +17,7 @@
                     <a href="#how-it-works" class="btn btn-hero-outline btn-lg">See how it works</a>
                 </div>
                 <p class="hero-note"><i class="bi bi-clock me-2"></i>About 5 minutes &nbsp; <i class="bi bi-lock me-2"></i>No sign-up required</p>
+                <p class="hero-note"><i class="bi bi-stars me-2"></i>New in 2.0: <a class="text-white fw-semibold" href="{{ url_for('tailored_intake') }}">Questions tailored to your type of business</a></p>
             </div>
             <div class="col-lg-5">
                 <div class="hero-dashboard-card">
@@ -56,7 +57,7 @@
                     <div class="feature-icon feature-icon-blue"><i class="bi bi-clipboard2-pulse"></i></div>
                     <h3>Cyber Risk Assessment</h3>
                     <p>Assess the everyday safeguards that help protect your business from common cyber threats.</p>
-                    <span class="feature-link">20 focused questions <i class="bi bi-arrow-right"></i></span>
+                    <a class="feature-link" href="{{ url_for('assessment') }}">20 focused questions <i class="bi bi-arrow-right"></i></a>
                 </article>
             </div>
             <div class="col-md-4">
@@ -73,6 +74,35 @@
                     <h3>Action Plan</h3>
                     <p>Turn assessment results into prioritised, practical improvements your team can understand.</p>
                     <span class="feature-link">Made for your answers <i class="bi bi-arrow-right"></i></span>
+                </article>
+            </div>
+        </div>
+        <div class="row g-4 mt-1">
+            <div class="col-md-4">
+                <article class="feature-card h-100">
+                    <span class="new-badge">New in 2.0</span>
+                    <div class="feature-icon feature-icon-blue"><i class="bi bi-shop"></i></div>
+                    <h3>Tailored Assessment</h3>
+                    <p>Answer four quick questions about your business to add five extra questions for retail, hospitality, trades or professional services.</p>
+                    <a class="feature-link" href="{{ url_for('tailored_intake') }}">Tailor my assessment <i class="bi bi-arrow-right"></i></a>
+                </article>
+            </div>
+            <div class="col-md-4">
+                <article class="feature-card h-100">
+                    <span class="new-badge">New in 2.0</span>
+                    <div class="feature-icon feature-icon-green"><i class="bi bi-graph-up-arrow"></i></div>
+                    <h3>Score History</h3>
+                    <p>Create a free account to save each result and see your progress over time. You can delete your account and history at any time.</p>
+                    <a class="feature-link" href="{{ url_for('register_form') }}">Create an account <i class="bi bi-arrow-right"></i></a>
+                </article>
+            </div>
+            <div class="col-md-4">
+                <article class="feature-card h-100">
+                    <span class="new-badge">New in 2.0</span>
+                    <div class="feature-icon feature-icon-amber"><i class="bi bi-journal-check"></i></div>
+                    <h3>Traceable Questions</h3>
+                    <p>Every question links to the published guidance behind it: NIST CSF 2.0, the Essential Eight, the ACSC small business guide and more.</p>
+                    <a class="feature-link" href="{{ url_for('tailored_sources') }}">See the sources <i class="bi bi-arrow-right"></i></a>
                 </article>
             </div>
         </div>

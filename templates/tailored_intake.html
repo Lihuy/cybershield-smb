@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Tailored assessment | CyberShield SMB{% endblock %}
+
+{% block content %}
+<section class="page-banner">
+    <div class="container">
+        <div class="eyebrow"><i class="bi bi-sliders"></i> Tailored assessment</div>
+        <h1>Tell us about your business</h1>
+        <p>Four quick questions help us suggest your business type, so we can add a few questions that fit it. You will still answer the same 20 core questions as everyone else.</p>
+    </div>
+</section>
+
+<section class="assessment-section">
+    <div class="container intake-container">
+        {% set step = 1 %}{% include "_tailored_steps.html" %}
+        {% if error %}<div class="form-error" role="alert"><i class="bi bi-exclamation-circle-fill"></i>{{ error }}</div>{% endif %}
+        <form method="post" action="{{ url_for('tailored_intake') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            {% for question in questions %}
+            <fieldset class="intake-card">
+                <legend><span class="intake-step">{{ loop.index }}</span>{{ question.question }}</legend>
+                <div class="intake-options">
+                    {% for option in question.options %}
+                    <label class="intake-option" for="{{ question.id }}-{{ option.id }}">
+                        <input type="radio" name="{{ question.id }}" id="{{ question.id }}-{{ option.id }}" value="{{ option.id }}" required {% if selected and selected.get(question.id) == option.id %}checked{% endif %}>
+                        <span>{{ option.label }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </fieldset>
+            {% endfor %}
+
+            <div class="intake-card">
+                <label class="intake-legend" for="description">Optional: describe your business in a sentence</label>
+                <input class="form-control" id="description" name="description" type="text" maxlength="200" placeholder="For example: a two-person electrical contracting business" value="{{ selected.get('description', '') if selected else '' }}">
+                <p class="intake-note"><i class="bi bi-info-circle"></i> If you fill this in, the text is sent to our AI provider (OpenAI) only to match it to one of four business types. It is not saved. Please do not include names or confidential details.</p>
+            </div>
+
+            <div class="assessment-submit-card">
+                <div><h2>Next: check your business type</h2><p>You will see what we suggested and why, and you can change it.</p></div>
+                <button type="submit" class="btn btn-primary btn-lg">Continue <i class="bi bi-arrow-right ms-2"></i></button>
+            </div>
+        </form>
+        <p class="assessment-disclaimer"><a href="{{ url_for('assessment') }}">Skip this and take the standard 20-question assessment</a></p>
+    </div>
+</section>
+{% endblock %}

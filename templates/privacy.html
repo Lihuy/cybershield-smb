@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy notice | CyberShield SMB{% endblock %}
+
+{% block content %}
+<section class="page-banner">
+    <div class="container">
+        <span class="section-label">PRIVACY NOTICE · VERSION {{ notice_version }}</span>
+        <h1>How CyberShield SMB handles your information</h1>
+        <p>A short, plain-English summary of what is kept, what is not, and how you stay in control.</p>
+    </div>
+</section>
+
+<section class="privacy-section">
+    <div class="container privacy-container">
+        <article class="privacy-card">
+            <h2>Using CyberShield as a guest</h2>
+            <p>You can complete the assessment, see your results, download the PDF and use the assistant without an account. A guest result is held only in your browser session. It is not saved to our database, and it is cleared when your session ends.</p>
+
+            <h2>If you create an account</h2>
+            <p>We save the following so you can return to your score history:</p>
+            <ul>
+                <li>your email address;</li>
+                <li>your password, stored only as a one-way scrypt hash (we cannot read it);</li>
+                <li>the date and time you accepted this privacy notice, and which version;</li>
+                <li>for each saved assessment: the date, overall score, risk level, category scores and the recommended actions;</li>
+                <li>if you take the tailored assessment: the business type you confirmed (for example Retail) and your score for that type's questions.</li>
+            </ul>
+            <p>We do <strong>not</strong> save your individual Yes/No answers to the database.</p>
+
+            <h2>Passwords and sign-in safety</h2>
+            <p>Passwords must be at least 15 characters. When you register, a short fragment of a hash of your password (never the password itself) is checked against the Have I Been Pwned breach list. To slow down guessing, repeated sign-in attempts are limited; for this we keep only scrambled keys, not your raw email address or IP address.</p>
+
+            <h2>The tailored assessment</h2>
+            <p>The tailored assessment asks four questions about your business and suggests one of four business types using simple rules that are shown to you. You confirm or change the suggestion. If you choose to type a description of your business, that text is sent to OpenAI only to match it to one of the four types, and it is not saved. Guests can use the tailored assessment too; nothing is saved without an account.</p>
+
+            <h2>The AI assistant</h2>
+            <p>Questions you type into the assistant, and the recommendation you choose to ask about, are sent to OpenAI to generate an answer. Please do not enter passwords, customer details or other confidential information. The assistant is also given your latest risk level and score, and your business type if you took the tailored assessment, but not your individual answers.</p>
+
+            <h2>Your choices</h2>
+            <ul>
+                <li>You can use the whole assessment without creating an account.</li>
+                <li>You can delete your account at any time from the Score history page. This permanently removes your account, your consent record and all saved assessments.</li>
+            </ul>
+
+            <h2>Limits you should know about</h2>
+            <p>CyberShield SMB is an educational prototype built for a university project. It gives general information based on the answers you provide and is not a security audit or professional advice. There is no password reset or email verification yet. If you have questions about this notice, contact the project team through your course facilitator.</p>
+        </article>
+    </div>
+</section>
+{% endblock %}
