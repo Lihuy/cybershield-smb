@@ -30,7 +30,7 @@ jobs:
 
       - name: Keep the end-to-end report
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: e2e-report
           path: e2e/report/
